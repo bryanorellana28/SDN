@@ -14,3 +14,17 @@ model User {
   password String
   createdAt DateTime @default(now())
 }
+
+model Device {
+  id             Int      @id @default(autoincrement())
+  ipGestion      String
+  nombre         String
+  sitio          String
+  rack           String
+  tipoEquipo     String
+  marca          String
+  modelo         String
+  versionSoftware String
+  serial         String?
+  createdAt      DateTime @default(now())
+}
