@@ -11,7 +11,9 @@ interface BarChartProps {
 }
 
 export default function BarChart({ data, maxHeight = 200 }: BarChartProps) {
-  const maxValue = Math.max(...data.map((d) => d.value), 0)
+  // Convert values to numbers to avoid potential string or bigint issues
+  const numericValues = data.map((d) => Number(d.value))
+  const maxValue = Math.max(...numericValues, 0)
   return (
     <Flex align="flex-end" gap={2} h={maxHeight}>
       {data.map((d) => (
@@ -20,7 +22,7 @@ export default function BarChart({ data, maxHeight = 200 }: BarChartProps) {
             w="100%"
             bg="blue.500"
             borderRadius="md"
-            h={maxValue ? `${(d.value / maxValue) * 100}%` : '0%'}
+            h={maxValue ? `${(Number(d.value) / maxValue) * 100}%` : '0%'}
           />
           <Text mt={1} fontSize="sm" noOfLines={1}>
             {d.label}
