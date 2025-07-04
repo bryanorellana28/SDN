@@ -17,7 +17,8 @@
     "@chakra-ui/react": "^2.7.1",
     "@emotion/react": "^11.11.1",
     "@emotion/styled": "^11.11.0",
-    "framer-motion": "^10.12.16"
+    "framer-motion": "^10.12.16",
+    "recharts": "^2.8.0"
   },
   "devDependencies": {
     "prisma": "5.1.1",
