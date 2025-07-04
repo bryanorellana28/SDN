@@ -51,6 +51,7 @@ export default function Inventory({ devices }: { devices: Device[] }) {
     serial: ''
   })
   const [isOpen, setIsOpen] = useState(false)
+  const [search, setSearch] = useState('')
   const onClose = () => setIsOpen(false)
 
   function handleChange(e: React.ChangeEvent<HTMLInputElement>) {
@@ -83,11 +84,27 @@ export default function Inventory({ devices }: { devices: Device[] }) {
     router.reload()
   }
 
+  const filteredDevices = devices.filter((d) =>
+    Object.values(d).some((v) =>
+      v && v.toString().toLowerCase().includes(search.toLowerCase())
+    )
+  )
+
   return (
     <SidebarLayout>
       <Box display='flex' justifyContent='space-between' alignItems='center' mb={4}>
         <Box as='h1' fontSize='xl' fontWeight='bold'>Inventario</Box>
-        <Button colorScheme='blue' onClick={() => setIsOpen(true)}>Agregar</Button>
+        <Box ml='auto' display='flex' alignItems='center'>
+          <Input
+            placeholder='Buscar...'
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            mr={2}
+            bg='white'
+            color='black'
+          />
+          <Button colorScheme='blue' onClick={() => setIsOpen(true)}>Agregar</Button>
+        </Box>
       </Box>
 
       <Drawer isOpen={isOpen} placement='right' onClose={onClose} size='md'>
@@ -154,7 +171,7 @@ export default function Inventory({ devices }: { devices: Device[] }) {
           </Tr>
         </Thead>
         <Tbody>
-          {devices.map((d) => (
+          {filteredDevices.map((d) => (
             <Tr key={d.id}>
               <Td>{d.ipGestion}</Td>
               <Td>{d.nombre}</Td>
