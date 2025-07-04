@@ -1,16 +1,12 @@
-import { ReactNode } from 'react'
+import { ReactNode, useState } from 'react'
 import NextLink from 'next/link'
-import { Box, Flex, Button, VStack, Text } from '@chakra-ui/react'
+import { Box, Flex, Button, VStack, Text, Collapse } from '@chakra-ui/react'
 
 export default function SidebarLayout({ children }: { children: ReactNode }) {
+  const [open, setOpen] = useState(false)
   return (
     <Flex minH='100vh'>
-      <Box
-        w='200px'
-        bgGradient='linear(to-b, #020024, #090979, #00d4ff)'
-        color='white'
-        p={4}
-      >
+      <Box w='220px' bg='gray.800' color='white' p={4}>
         <Text fontSize='lg' fontWeight='bold' mb={4}>
           Menu
         </Text>
@@ -26,15 +22,51 @@ export default function SidebarLayout({ children }: { children: ReactNode }) {
             Dashboard
           </Button>
           <Button
-            as={NextLink}
-            href='/inventory'
             bg='white'
             color='gray.800'
             _hover={{ bg: 'gray.200' }}
             w='100%'
+            onClick={() => setOpen(!open)}
           >
-            Inventario
+            Dispositivos
           </Button>
+          <Collapse in={open} animateOpacity>
+            <VStack align='stretch' spacing={1} mt={1} pl={2}>
+              <Button
+                as={NextLink}
+                href='/inventory'
+                bg='white'
+                color='gray.800'
+                _hover={{ bg: 'gray.200' }}
+                w='100%'
+                size='sm'
+              >
+                Inventario
+              </Button>
+              <Button
+                as={NextLink}
+                href='/sites'
+                bg='white'
+                color='gray.800'
+                _hover={{ bg: 'gray.200' }}
+                w='100%'
+                size='sm'
+              >
+                Sitios
+              </Button>
+              <Button
+                as={NextLink}
+                href='/brands'
+                bg='white'
+                color='gray.800'
+                _hover={{ bg: 'gray.200' }}
+                w='100%'
+                size='sm'
+              >
+                Marcas
+              </Button>
+            </VStack>
+          </Collapse>
         </VStack>
       </Box>
       <Box flex='1' p={4} bg='gray.50'>

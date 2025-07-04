@@ -1,7 +1,7 @@
 import { GetServerSideProps } from 'next'
 import { getSession } from 'next-auth/react'
 import { useRouter } from 'next/router'
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import {
   Box,
   Button,
@@ -26,13 +26,22 @@ interface Device {
   serial?: string | null
 }
 
+interface Option { id: number; name: string }
+
 export default function EditDevice({ device }: { device: Device }) {
   const router = useRouter()
   const [form, setForm] = useState({ ...device })
+  const [sites, setSites] = useState<Option[]>([])
+  const [brands, setBrands] = useState<Option[]>([])
 
-  function handleChange(e: React.ChangeEvent<HTMLInputElement>) {
+  function handleChange(e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) {
     setForm({ ...form, [e.target.name]: e.target.value })
   }
+
+  useEffect(() => {
+    fetch('/api/sites').then(res => res.json()).then(setSites)
+    fetch('/api/brands').then(res => res.json()).then(setBrands)
+  }, [])
 
   async function handleSave() {
     await fetch(`/api/devices/${device.id}`, {
@@ -57,7 +66,12 @@ export default function EditDevice({ device }: { device: Device }) {
         </FormControl>
         <FormControl mb={2}>
           <FormLabel>Sitio</FormLabel>
-          <Input name='sitio' value={form.sitio} onChange={handleChange} />
+          <select name='sitio' value={form.sitio} onChange={handleChange} style={{ width: '100%', padding: '8px', borderRadius: '4px' }}>
+            <option value=''>Seleccione...</option>
+            {sites.map((s) => (
+              <option key={s.id} value={s.name}>{s.name}</option>
+            ))}
+          </select>
         </FormControl>
         <FormControl mb={2}>
           <FormLabel>Rack</FormLabel>
@@ -69,7 +83,12 @@ export default function EditDevice({ device }: { device: Device }) {
         </FormControl>
         <FormControl mb={2}>
           <FormLabel>Marca</FormLabel>
-          <Input name='marca' value={form.marca} onChange={handleChange} />
+          <select name='marca' value={form.marca} onChange={handleChange} style={{ width: '100%', padding: '8px', borderRadius: '4px' }}>
+            <option value=''>Seleccione...</option>
+            {brands.map((b) => (
+              <option key={b.id} value={b.name}>{b.name}</option>
+            ))}
+          </select>
         </FormControl>
         <FormControl mb={2}>
           <FormLabel>Modelo</FormLabel>
