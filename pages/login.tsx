@@ -1,4 +1,4 @@
-import { getCsrfToken } from 'next-auth/react'
+import { getCsrfToken, signIn } from 'next-auth/react'
 import { useState } from 'react'
 import { useRouter } from 'next/router'
 
@@ -8,13 +8,15 @@ export default function Login({ csrfToken }: { csrfToken: string }) {
 
   async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault()
-    const form = e.currentTarget
-    const res = await fetch('/api/auth/callback/credentials', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-      body: new URLSearchParams(new FormData(form) as any).toString()
+    const form = new FormData(e.currentTarget)
+    const res = await signIn('credentials', {
+      redirect: false,
+      email: form.get('email'),
+      password: form.get('password'),
+      callbackUrl: '/dashboard'
     })
-    if (res.ok) {
+
+    if (res?.ok) {
       router.push('/dashboard')
     } else {
       setError('Credenciales inválidas')
