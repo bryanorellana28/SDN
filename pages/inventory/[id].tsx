@@ -23,18 +23,22 @@ interface Device {
   marca: string
   modelo: string
   versionSoftware: string
+  credentialId?: number | null
+  credential?: { id: number; usuario: string } | null
   serial?: string | null
   assetTag?: string | null
   descripcion?: string | null
 }
 
 interface Option { id: number; name: string }
+interface CredentialOption { id: number; usuario: string }
 
 export default function EditDevice({ device }: { device: Device }) {
   const router = useRouter()
   const [form, setForm] = useState({ ...device })
   const [sites, setSites] = useState<Option[]>([])
   const [brands, setBrands] = useState<Option[]>([])
+  const [creds, setCreds] = useState<CredentialOption[]>([])
 
   function handleChange(e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) {
     setForm({ ...form, [e.target.name]: e.target.value })
@@ -43,13 +47,15 @@ export default function EditDevice({ device }: { device: Device }) {
   useEffect(() => {
     fetch('/api/sites').then(res => res.json()).then(setSites)
     fetch('/api/brands').then(res => res.json()).then(setBrands)
+    fetch('/api/credentials').then(res => res.json()).then(setCreds)
   }, [])
 
   async function handleSave() {
+    const payload = { ...form, credentialId: form.credentialId ? Number(form.credentialId) : null }
     await fetch(`/api/devices/${device.id}`, {
       method: 'PUT',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(form)
+      body: JSON.stringify(payload)
     })
     router.push('/inventory')
   }
@@ -101,6 +107,15 @@ export default function EditDevice({ device }: { device: Device }) {
           <Input name='versionSoftware' value={form.versionSoftware} onChange={handleChange} />
         </FormControl>
         <FormControl mb={4}>
+          <FormLabel>Usuario</FormLabel>
+          <select name='credentialId' value={form.credentialId ?? ''} onChange={handleChange} style={{ width: '100%', padding: '8px', borderRadius: '4px' }}>
+            <option value=''>Seleccione...</option>
+            {creds.map((c) => (
+              <option key={c.id} value={c.id}>{c.usuario}</option>
+            ))}
+          </select>
+        </FormControl>
+        <FormControl mb={4}>
           <FormLabel>Serial</FormLabel>
           <Input name='serial' value={form.serial ?? ''} onChange={handleChange} />
         </FormControl>
@@ -130,13 +145,14 @@ export const getServerSideProps: GetServerSideProps = async ({ params, ...contex
   }
 
   const id = Number(params?.id)
-  const device = await prisma.device.findUnique({ where: { id } })
+  const device = await prisma.device.findUnique({ where: { id }, include: { credential: true } })
   if (!device) {
     return { notFound: true }
   }
   const serializedDevice = {
     ...device,
-    createdAt: device.createdAt.toISOString()
+    createdAt: device.createdAt.toISOString(),
+    credential: device.credential
   }
   return {
     props: { device: serializedDevice }

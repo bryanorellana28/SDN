@@ -65,6 +65,17 @@ export default function SidebarLayout({ children }: { children: ReactNode }) {
               >
                 Marcas
               </Button>
+              <Button
+                as={NextLink}
+                href='/passwords'
+                bg='white'
+                color='gray.800'
+                _hover={{ bg: 'gray.200' }}
+                w='100%'
+                size='sm'
+              >
+                Contraseñas
+              </Button>
             </VStack>
           </Collapse>
         </VStack>

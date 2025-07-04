@@ -25,6 +25,8 @@ model Device {
   marca          String
   modelo         String
   versionSoftware String
+  credentialId   Int?
+  credential     Credential? @relation(fields: [credentialId], references: [id])
   serial         String?
   assetTag       String?
   descripcion    String?
@@ -44,4 +46,12 @@ model Brand {
   name      String   @unique
   descripcion String?
   createdAt DateTime @default(now())
+}
+
+model Credential {
+  id         Int       @id @default(autoincrement())
+  usuario    String
+  contrasena String
+  createdAt  DateTime  @default(now())
+  devices    Device[]
 }

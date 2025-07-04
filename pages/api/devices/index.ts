@@ -17,6 +17,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       marca,
       modelo,
       versionSoftware,
+      credentialId,
       serial,
       assetTag,
       descripcion
@@ -32,6 +33,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         marca,
         modelo,
         versionSoftware,
+        credentialId,
         serial,
         assetTag,
         descripcion
