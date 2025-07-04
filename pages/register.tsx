@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { useRouter } from 'next/router'
+import styles from '../styles/AuthForm.module.css'
 
 export default function Register() {
   const router = useRouter()
@@ -26,24 +27,24 @@ export default function Register() {
   }
 
   return (
-    <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh', background: '#f5f5f5' }}>
-      <form onSubmit={handleSubmit} style={{ background: 'white', padding: '2rem', borderRadius: '8px', boxShadow: '0 2px 8px rgba(0,0,0,0.1)' }}>
+    <div className={styles.container}>
+      <form onSubmit={handleSubmit} className={styles.form}>
         <h1 style={{ marginBottom: '1rem', textAlign: 'center' }}>Registro</h1>
         {error && <p style={{ color: 'red' }}>{error}</p>}
-        <div style={{ marginBottom: '1rem' }}>
+        <div className={styles.field}>
           <label>Nombre</label>
-          <input type='text' name='name' required style={{ width: '100%' }} />
+          <input type='text' name='name' required />
         </div>
-        <div style={{ marginBottom: '1rem' }}>
+        <div className={styles.field}>
           <label>Correo</label>
-          <input type='email' name='email' required style={{ width: '100%' }} />
+          <input type='email' name='email' required />
         </div>
-        <div style={{ marginBottom: '1rem' }}>
+        <div className={styles.field}>
           <label>Contraseña</label>
-          <input type='password' name='password' required style={{ width: '100%' }} />
+          <input type='password' name='password' required />
         </div>
-        <button type='submit' style={{ width: '100%' }}>Registrar</button>
-        <p style={{ marginTop: '1rem', textAlign: 'center' }}>
+        <button type='submit' className={styles.submit}>Registrar</button>
+        <p className={styles.link}>
           ¿Ya tienes cuenta? <a href='/login'>Inicia sesión</a>
         </p>
       </form>

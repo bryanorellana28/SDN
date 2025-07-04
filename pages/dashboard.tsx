@@ -1,4 +1,4 @@
-import { getSession } from 'next-auth/react'
+import { getSession, signOut } from 'next-auth/react'
 import { GetServerSideProps } from 'next'
 
 export default function Dashboard() {
@@ -14,6 +14,9 @@ export default function Dashboard() {
       <main style={{ flex: 1, padding: '1rem' }}>
         <h1>Dashboard</h1>
         <p>Contenido privado</p>
+        <button onClick={() => signOut()} style={{ marginTop: '1rem' }}>
+          Cerrar sesión
+        </button>
       </main>
     </div>
   )
