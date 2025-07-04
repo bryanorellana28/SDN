@@ -15,6 +15,7 @@ import {
   Td
 } from '@chakra-ui/react'
 import SidebarLayout from '../components/SidebarLayout'
+import BarChart from '../components/BarChart'
 import { prisma } from '../lib/prisma'
 
 interface Stats {
@@ -48,7 +49,14 @@ export default function Dashboard({ stats }: { stats: Stats }) {
 
         <Box mb={8}>
           <Box as='h2' fontSize='lg' fontWeight='bold' mb={2}>Equipos por Sitio</Box>
-          <Table variant='simple' size='sm'>
+          <BarChart
+            data={stats.devicesBySite.map((s) => ({
+              label: s.sitio || 'N/A',
+              value: s._count._all
+            }))}
+            maxHeight={200}
+          />
+          <Table variant='simple' size='sm' mt={4}>
             <Thead>
               <Tr>
                 <Th>Sitio</Th>
@@ -68,7 +76,14 @@ export default function Dashboard({ stats }: { stats: Stats }) {
 
         <Box mb={8}>
           <Box as='h2' fontSize='lg' fontWeight='bold' mb={2}>Equipos por Marca</Box>
-          <Table variant='simple' size='sm'>
+          <BarChart
+            data={stats.devicesByBrand.map((b) => ({
+              label: b.marca || 'N/A',
+              value: b._count._all
+            }))}
+            maxHeight={200}
+          />
+          <Table variant='simple' size='sm' mt={4}>
             <Thead>
               <Tr>
                 <Th>Marca</Th>
