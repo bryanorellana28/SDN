@@ -35,6 +35,8 @@ interface Device {
   modelo: string
   versionSoftware: string
   serial?: string | null
+  assetTag?: string | null
+  descripcion?: string | null
 }
 
 interface Option { id: number; name: string }
@@ -50,7 +52,9 @@ export default function Inventory({ devices }: { devices: Device[] }) {
     marca: '',
     modelo: '',
     versionSoftware: '',
-    serial: ''
+    serial: '',
+    assetTag: '',
+    descripcion: ''
   })
   const [isOpen, setIsOpen] = useState(false)
   const [search, setSearch] = useState('')
@@ -82,7 +86,9 @@ export default function Inventory({ devices }: { devices: Device[] }) {
       marca: '',
       modelo: '',
       versionSoftware: '',
-      serial: ''
+      serial: '',
+      assetTag: '',
+      descripcion: ''
     })
     onClose()
     router.reload()
@@ -167,6 +173,14 @@ export default function Inventory({ devices }: { devices: Device[] }) {
               <FormLabel>Serial</FormLabel>
               <Input name='serial' value={form.serial} onChange={handleChange} />
             </FormControl>
+            <FormControl mb={2}>
+              <FormLabel>Asset Tag</FormLabel>
+              <Input name='assetTag' value={form.assetTag} onChange={handleChange} />
+            </FormControl>
+            <FormControl mb={2}>
+              <FormLabel>Descripción</FormLabel>
+              <Input name='descripcion' value={form.descripcion} onChange={handleChange} />
+            </FormControl>
           </DrawerBody>
           <DrawerFooter>
             <Button variant='outline' mr={3} onClick={onClose}>Cancelar</Button>
@@ -186,6 +200,8 @@ export default function Inventory({ devices }: { devices: Device[] }) {
             <Th>Modelo</Th>
             <Th>Versión</Th>
             <Th>Serial</Th>
+            <Th>Asset Tag</Th>
+            <Th>Descripción</Th>
             <Th>Acciones</Th>
           </Tr>
         </Thead>
@@ -201,6 +217,8 @@ export default function Inventory({ devices }: { devices: Device[] }) {
               <Td>{d.modelo}</Td>
               <Td>{d.versionSoftware}</Td>
               <Td>{d.serial}</Td>
+              <Td>{d.assetTag}</Td>
+              <Td>{d.descripcion}</Td>
               <Td>
                 <Button size='sm' mr={2} onClick={() => router.push(`/inventory/${d.id}`)}>Editar</Button>
                 <Button size='sm' colorScheme='red' onClick={() => handleDelete(d.id)}>Eliminar</Button>

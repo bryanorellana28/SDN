@@ -27,11 +27,13 @@ import { prisma } from '../../lib/prisma'
 interface Site {
   id: number
   name: string
+  ubicacion?: string | null
+  descripcion?: string | null
 }
 
 export default function Sites({ sites }: { sites: Site[] }) {
   const router = useRouter()
-  const [form, setForm] = useState({ name: '' })
+  const [form, setForm] = useState({ name: '', ubicacion: '', descripcion: '' })
   const [isOpen, setIsOpen] = useState(false)
   const onClose = () => setIsOpen(false)
 
@@ -45,7 +47,7 @@ export default function Sites({ sites }: { sites: Site[] }) {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(form)
     })
-    setForm({ name: '' })
+    setForm({ name: '', ubicacion: '', descripcion: '' })
     onClose()
     router.reload()
   }
@@ -71,6 +73,14 @@ export default function Sites({ sites }: { sites: Site[] }) {
               <FormLabel>Nombre</FormLabel>
               <Input name='name' value={form.name} onChange={handleChange} />
             </FormControl>
+            <FormControl mb={2}>
+              <FormLabel>Ubicación</FormLabel>
+              <Input name='ubicacion' value={form.ubicacion} onChange={handleChange} />
+            </FormControl>
+            <FormControl mb={2}>
+              <FormLabel>Descripción</FormLabel>
+              <Input name='descripcion' value={form.descripcion} onChange={handleChange} />
+            </FormControl>
           </DrawerBody>
           <DrawerFooter>
             <Button variant='outline' mr={3} onClick={onClose}>Cancelar</Button>
@@ -83,6 +93,8 @@ export default function Sites({ sites }: { sites: Site[] }) {
         <Thead>
           <Tr>
             <Th>Nombre</Th>
+            <Th>Ubicación</Th>
+            <Th>Descripción</Th>
             <Th>Acciones</Th>
           </Tr>
         </Thead>
@@ -90,6 +102,8 @@ export default function Sites({ sites }: { sites: Site[] }) {
           {sites.map((s) => (
             <Tr key={s.id}>
               <Td>{s.name}</Td>
+              <Td>{s.ubicacion}</Td>
+              <Td>{s.descripcion}</Td>
               <Td>
                 <Button size='sm' mr={2} onClick={() => router.push(`/sites/${s.id}`)}>Editar</Button>
                 <Button size='sm' colorScheme='red' onClick={() => handleDelete(s.id)}>Eliminar</Button>

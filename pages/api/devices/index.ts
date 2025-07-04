@@ -17,7 +17,9 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       marca,
       modelo,
       versionSoftware,
-      serial
+      serial,
+      assetTag,
+      descripcion
     } = req.body
 
     const device = await prisma.device.create({
@@ -30,7 +32,9 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         marca,
         modelo,
         versionSoftware,
-        serial
+        serial,
+        assetTag,
+        descripcion
       }
     })
     return res.status(201).json(device)

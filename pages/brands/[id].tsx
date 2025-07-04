@@ -9,6 +9,7 @@ import { prisma } from '../../lib/prisma'
 interface Brand {
   id: number
   name: string
+  descripcion?: string | null
 }
 
 export default function EditBrand({ brand }: { brand: Brand }) {
@@ -35,6 +36,10 @@ export default function EditBrand({ brand }: { brand: Brand }) {
         <FormControl mb={2}>
           <FormLabel>Nombre</FormLabel>
           <Input name='name' value={form.name} onChange={handleChange} />
+        </FormControl>
+        <FormControl mb={2}>
+          <FormLabel>Descripción</FormLabel>
+          <Input name='descripcion' value={form.descripcion ?? ''} onChange={handleChange} />
         </FormControl>
         <Button onClick={handleSave} colorScheme='blue'>Guardar</Button>
       </Box>
