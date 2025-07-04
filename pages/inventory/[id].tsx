@@ -153,6 +153,8 @@ export const getServerSideProps: GetServerSideProps = async ({ params, ...contex
     ...device,
     createdAt: device.createdAt.toISOString(),
     credential: device.credential
+      ? { ...device.credential, createdAt: device.credential.createdAt.toISOString() }
+      : null
   }
   return {
     props: { device: serializedDevice }
