@@ -11,9 +11,9 @@ interface BarChartProps {
 }
 
 export default function BarChart({ data, maxHeight = 200 }: BarChartProps) {
-  // Convert values to numbers to avoid potential string or bigint issues
-  const numericValues = data.map((d) => Number(d.value))
-  const maxValue = Math.max(...numericValues, 0)
+  // Convert values to numbers and filter invalid ones before computing the max
+  const numericValues = data.map((d) => Number(d.value)).filter((n) => !isNaN(n))
+  const maxValue = numericValues.length ? Math.max(...numericValues, 0) : 0
   return (
     <Flex align="flex-end" gap={2} h={maxHeight}>
       {data.map((d) => (
