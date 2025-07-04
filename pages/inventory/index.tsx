@@ -5,6 +5,14 @@ import { useState } from 'react'
 import {
   Box,
   Button,
+  Drawer,
+  DrawerBody,
+  DrawerFooter,
+  DrawerHeader,
+  DrawerOverlay,
+  DrawerContent,
+  FormControl,
+  FormLabel,
   Input,
   Table,
   Thead,
@@ -42,6 +50,8 @@ export default function Inventory({ devices }: { devices: Device[] }) {
     versionSoftware: '',
     serial: ''
   })
+  const [isOpen, setIsOpen] = useState(false)
+  const onClose = () => setIsOpen(false)
 
   function handleChange(e: React.ChangeEvent<HTMLInputElement>) {
     setForm({ ...form, [e.target.name]: e.target.value })
@@ -53,6 +63,18 @@ export default function Inventory({ devices }: { devices: Device[] }) {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(form)
     })
+    setForm({
+      ipGestion: '',
+      nombre: '',
+      sitio: '',
+      rack: '',
+      tipoEquipo: '',
+      marca: '',
+      modelo: '',
+      versionSoftware: '',
+      serial: ''
+    })
+    onClose()
     router.reload()
   }
 
@@ -63,30 +85,59 @@ export default function Inventory({ devices }: { devices: Device[] }) {
 
   return (
     <SidebarLayout>
-      <Box mb={4}>
-        <Input
-          placeholder='IP de gestión'
-          name='ipGestion'
-          value={form.ipGestion}
-          onChange={handleChange}
-          mb={2}
-        />
-        <Input placeholder='Nombre' name='nombre' value={form.nombre} onChange={handleChange} mb={2} />
-        <Input placeholder='Sitio' name='sitio' value={form.sitio} onChange={handleChange} mb={2} />
-        <Input placeholder='Rack' name='rack' value={form.rack} onChange={handleChange} mb={2} />
-        <Input placeholder='Tipo de equipo' name='tipoEquipo' value={form.tipoEquipo} onChange={handleChange} mb={2} />
-        <Input placeholder='Marca' name='marca' value={form.marca} onChange={handleChange} mb={2} />
-        <Input placeholder='Modelo' name='modelo' value={form.modelo} onChange={handleChange} mb={2} />
-        <Input
-          placeholder='Versión de software'
-          name='versionSoftware'
-          value={form.versionSoftware}
-          onChange={handleChange}
-          mb={2}
-        />
-        <Input placeholder='Serial' name='serial' value={form.serial} onChange={handleChange} mb={2} />
-        <Button onClick={handleAdd} colorScheme='blue'>Agregar</Button>
+      <Box display='flex' justifyContent='space-between' alignItems='center' mb={4}>
+        <Box as='h1' fontSize='xl' fontWeight='bold'>Inventario</Box>
+        <Button colorScheme='blue' onClick={() => setIsOpen(true)}>Agregar</Button>
       </Box>
+
+      <Drawer isOpen={isOpen} placement='right' onClose={onClose} size='md'>
+        <DrawerOverlay />
+        <DrawerContent>
+          <DrawerHeader>Agregar Dispositivo</DrawerHeader>
+          <DrawerBody>
+            <FormControl mb={2}>
+              <FormLabel>IP de gestión</FormLabel>
+              <Input name='ipGestion' value={form.ipGestion} onChange={handleChange} />
+            </FormControl>
+            <FormControl mb={2}>
+              <FormLabel>Nombre</FormLabel>
+              <Input name='nombre' value={form.nombre} onChange={handleChange} />
+            </FormControl>
+            <FormControl mb={2}>
+              <FormLabel>Sitio</FormLabel>
+              <Input name='sitio' value={form.sitio} onChange={handleChange} />
+            </FormControl>
+            <FormControl mb={2}>
+              <FormLabel>Rack</FormLabel>
+              <Input name='rack' value={form.rack} onChange={handleChange} />
+            </FormControl>
+            <FormControl mb={2}>
+              <FormLabel>Tipo de equipo</FormLabel>
+              <Input name='tipoEquipo' value={form.tipoEquipo} onChange={handleChange} />
+            </FormControl>
+            <FormControl mb={2}>
+              <FormLabel>Marca</FormLabel>
+              <Input name='marca' value={form.marca} onChange={handleChange} />
+            </FormControl>
+            <FormControl mb={2}>
+              <FormLabel>Modelo</FormLabel>
+              <Input name='modelo' value={form.modelo} onChange={handleChange} />
+            </FormControl>
+            <FormControl mb={2}>
+              <FormLabel>Versión de software</FormLabel>
+              <Input name='versionSoftware' value={form.versionSoftware} onChange={handleChange} />
+            </FormControl>
+            <FormControl mb={2}>
+              <FormLabel>Serial</FormLabel>
+              <Input name='serial' value={form.serial} onChange={handleChange} />
+            </FormControl>
+          </DrawerBody>
+          <DrawerFooter>
+            <Button variant='outline' mr={3} onClick={onClose}>Cancelar</Button>
+            <Button colorScheme='blue' onClick={handleAdd}>Guardar</Button>
+          </DrawerFooter>
+        </DrawerContent>
+      </Drawer>
       <Table variant='simple'>
         <Thead>
           <Tr>
