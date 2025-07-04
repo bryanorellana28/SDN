@@ -1,7 +1,16 @@
 import { getCsrfToken, signIn } from 'next-auth/react'
 import { useState } from 'react'
 import { useRouter } from 'next/router'
-import styles from '../styles/AuthForm.module.css'
+import NextLink from 'next/link'
+import {
+  Box,
+  Button,
+  FormControl,
+  FormLabel,
+  Input,
+  Text,
+  Link
+} from '@chakra-ui/react'
 
 export default function Login({ csrfToken }: { csrfToken: string }) {
   const router = useRouter()
@@ -25,25 +34,51 @@ export default function Login({ csrfToken }: { csrfToken: string }) {
   }
 
   return (
-    <div className={styles.container}>
-      <form onSubmit={handleSubmit} className={styles.form}>
+    <Box
+      minH='100vh'
+      display='flex'
+      justifyContent='center'
+      alignItems='center'
+      bgGradient='linear(to-r, #020024, #090979, #00d4ff)'
+    >
+      <Box
+        as='form'
+        onSubmit={handleSubmit}
+        bg='white'
+        p={8}
+        borderRadius='md'
+        boxShadow='md'
+        w='100%'
+        maxW='400px'
+      >
         <input name='csrfToken' type='hidden' defaultValue={csrfToken} />
-        <h1 style={{ marginBottom: '1rem', textAlign: 'center' }}>Iniciar Sesión</h1>
-        {error && <p style={{ color: 'red' }}>{error}</p>}
-        <div className={styles.field}>
-          <label>Correo</label>
-          <input type='email' name='email' required />
-        </div>
-        <div className={styles.field}>
-          <label>Contraseña</label>
-          <input type='password' name='password' required />
-        </div>
-        <button type='submit' className={styles.submit}>Entrar</button>
-        <p className={styles.link}>
-          ¿No tienes cuenta? <a href='/register'>Regístrate</a>
-        </p>
-      </form>
-    </div>
+        <Text as='h1' mb={4} textAlign='center' fontSize='xl'>
+          Iniciar Sesión
+        </Text>
+        {error && (
+          <Text color='red.500' mb={2}>
+            {error}
+          </Text>
+        )}
+        <FormControl mb={4}>
+          <FormLabel>Correo</FormLabel>
+          <Input type='email' name='email' required />
+        </FormControl>
+        <FormControl mb={4}>
+          <FormLabel>Contraseña</FormLabel>
+          <Input type='password' name='password' required />
+        </FormControl>
+        <Button type='submit' colorScheme='blue' w='100%'>
+          Entrar
+        </Button>
+        <Text mt={2} textAlign='center'>
+          ¿No tienes cuenta?{' '}
+          <Link as={NextLink} href='/register' color='blue.500'>
+            Regístrate
+          </Link>
+        </Text>
+      </Box>
+    </Box>
   )
 }
 
