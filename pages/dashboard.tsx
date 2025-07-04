@@ -1,24 +1,25 @@
 import { getSession, signOut } from 'next-auth/react'
 import { GetServerSideProps } from 'next'
+import { Box, Button, Flex } from '@chakra-ui/react'
 
 export default function Dashboard() {
   return (
-    <div style={{ display: 'flex', minHeight: '100vh' }}>
-      <aside style={{ width: '200px', background: '#333', color: '#fff', padding: '1rem' }}>
+    <Flex minH='100vh'>
+      <Box w='200px' bg='#333' color='white' p={4}>
         <h2>Sidebar</h2>
         <ul>
           <li>Enlace 1</li>
           <li>Enlace 2</li>
         </ul>
-      </aside>
-      <main style={{ flex: 1, padding: '1rem' }}>
+      </Box>
+      <Box flex='1' p={4}>
         <h1>Dashboard</h1>
         <p>Contenido privado</p>
-        <button onClick={() => signOut()} style={{ marginTop: '1rem' }}>
+        <Button mt={4} onClick={() => signOut()}>
           Cerrar sesión
-        </button>
-      </main>
-    </div>
+        </Button>
+      </Box>
+    </Flex>
   )
 }
 
