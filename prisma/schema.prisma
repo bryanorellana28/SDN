@@ -55,3 +55,22 @@ model Credential {
   createdAt  DateTime  @default(now())
   devices    Device[]
 }
+
+model Backup {
+  id        Int      @id @default(autoincrement())
+  device    Device   @relation(fields: [deviceId], references: [id])
+  deviceId  Int
+  content   String
+  createdAt DateTime @default(now())
+}
+
+model Schedule {
+  id          Int        @id @default(autoincrement())
+  device      Device     @relation(fields: [deviceId], references: [id])
+  deviceId    Int
+  credential  Credential @relation(fields: [credentialId], references: [id])
+  credentialId Int
+  period      String
+  nextRun     DateTime
+  createdAt   DateTime   @default(now())
+}
