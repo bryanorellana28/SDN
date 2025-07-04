@@ -189,7 +189,11 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
   }
 
   const devices = await prisma.device.findMany()
+  const serializedDevices = devices.map((d) => ({
+    ...d,
+    createdAt: d.createdAt.toISOString()
+  }))
   return {
-    props: { devices }
+    props: { devices: serializedDevices }
   }
 }

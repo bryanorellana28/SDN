@@ -102,7 +102,14 @@ export const getServerSideProps: GetServerSideProps = async ({ params, ...contex
 
   const id = Number(params?.id)
   const device = await prisma.device.findUnique({ where: { id } })
+  if (!device) {
+    return { notFound: true }
+  }
+  const serializedDevice = {
+    ...device,
+    createdAt: device.createdAt.toISOString()
+  }
   return {
-    props: { device }
+    props: { device: serializedDevice }
   }
 }
