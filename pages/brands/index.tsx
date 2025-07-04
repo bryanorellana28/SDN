@@ -27,11 +27,12 @@ import { prisma } from '../../lib/prisma'
 interface Brand {
   id: number
   name: string
+  descripcion?: string | null
 }
 
 export default function Brands({ brands }: { brands: Brand[] }) {
   const router = useRouter()
-  const [form, setForm] = useState({ name: '' })
+  const [form, setForm] = useState({ name: '', descripcion: '' })
   const [isOpen, setIsOpen] = useState(false)
   const onClose = () => setIsOpen(false)
 
@@ -45,7 +46,7 @@ export default function Brands({ brands }: { brands: Brand[] }) {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(form)
     })
-    setForm({ name: '' })
+    setForm({ name: '', descripcion: '' })
     onClose()
     router.reload()
   }
@@ -71,6 +72,10 @@ export default function Brands({ brands }: { brands: Brand[] }) {
               <FormLabel>Nombre</FormLabel>
               <Input name='name' value={form.name} onChange={handleChange} />
             </FormControl>
+            <FormControl mb={2}>
+              <FormLabel>Descripción</FormLabel>
+              <Input name='descripcion' value={form.descripcion} onChange={handleChange} />
+            </FormControl>
           </DrawerBody>
           <DrawerFooter>
             <Button variant='outline' mr={3} onClick={onClose}>Cancelar</Button>
@@ -83,6 +88,7 @@ export default function Brands({ brands }: { brands: Brand[] }) {
         <Thead>
           <Tr>
             <Th>Nombre</Th>
+            <Th>Descripción</Th>
             <Th>Acciones</Th>
           </Tr>
         </Thead>
@@ -90,6 +96,7 @@ export default function Brands({ brands }: { brands: Brand[] }) {
           {brands.map((b) => (
             <Tr key={b.id}>
               <Td>{b.name}</Td>
+              <Td>{b.descripcion}</Td>
               <Td>
                 <Button size='sm' mr={2} onClick={() => router.push(`/brands/${b.id}`)}>Editar</Button>
                 <Button size='sm' colorScheme='red' onClick={() => handleDelete(b.id)}>Eliminar</Button>

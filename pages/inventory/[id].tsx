@@ -24,6 +24,8 @@ interface Device {
   modelo: string
   versionSoftware: string
   serial?: string | null
+  assetTag?: string | null
+  descripcion?: string | null
 }
 
 interface Option { id: number; name: string }
@@ -101,6 +103,14 @@ export default function EditDevice({ device }: { device: Device }) {
         <FormControl mb={4}>
           <FormLabel>Serial</FormLabel>
           <Input name='serial' value={form.serial ?? ''} onChange={handleChange} />
+        </FormControl>
+        <FormControl mb={4}>
+          <FormLabel>Asset Tag</FormLabel>
+          <Input name='assetTag' value={form.assetTag ?? ''} onChange={handleChange} />
+        </FormControl>
+        <FormControl mb={4}>
+          <FormLabel>Descripción</FormLabel>
+          <Input name='descripcion' value={form.descripcion ?? ''} onChange={handleChange} />
         </FormControl>
         <Button onClick={handleSave} colorScheme='blue'>Guardar</Button>
       </Box>

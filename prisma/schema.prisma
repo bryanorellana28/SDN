@@ -26,17 +26,22 @@ model Device {
   modelo         String
   versionSoftware String
   serial         String?
+  assetTag       String?
+  descripcion    String?
   createdAt      DateTime @default(now())
 }
 
 model Site {
   id        Int      @id @default(autoincrement())
   name      String   @unique
+  ubicacion String?
+  descripcion String?
   createdAt DateTime @default(now())
 }
 
 model Brand {
   id        Int      @id @default(autoincrement())
   name      String   @unique
+  descripcion String?
   createdAt DateTime @default(now())
 }

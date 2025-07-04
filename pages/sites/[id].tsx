@@ -9,6 +9,8 @@ import { prisma } from '../../lib/prisma'
 interface Site {
   id: number
   name: string
+  ubicacion?: string | null
+  descripcion?: string | null
 }
 
 export default function EditSite({ site }: { site: Site }) {
@@ -35,6 +37,14 @@ export default function EditSite({ site }: { site: Site }) {
         <FormControl mb={2}>
           <FormLabel>Nombre</FormLabel>
           <Input name='name' value={form.name} onChange={handleChange} />
+        </FormControl>
+        <FormControl mb={2}>
+          <FormLabel>Ubicación</FormLabel>
+          <Input name='ubicacion' value={form.ubicacion ?? ''} onChange={handleChange} />
+        </FormControl>
+        <FormControl mb={2}>
+          <FormLabel>Descripción</FormLabel>
+          <Input name='descripcion' value={form.descripcion ?? ''} onChange={handleChange} />
         </FormControl>
         <Button onClick={handleSave} colorScheme='blue'>Guardar</Button>
       </Box>

@@ -8,8 +8,8 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   }
 
   if (req.method === 'POST') {
-    const { name } = req.body
-    const site = await prisma.site.create({ data: { name } })
+    const { name, ubicacion, descripcion } = req.body
+    const site = await prisma.site.create({ data: { name, ubicacion, descripcion } })
     return res.status(201).json(site)
   }
 
