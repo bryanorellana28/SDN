@@ -34,12 +34,15 @@ interface Device {
   marca: string
   modelo: string
   versionSoftware: string
+  credentialId?: number | null
+  credential?: { id: number; usuario: string } | null
   serial?: string | null
   assetTag?: string | null
   descripcion?: string | null
 }
 
 interface Option { id: number; name: string }
+interface CredentialOption { id: number; usuario: string }
 
 export default function Inventory({ devices }: { devices: Device[] }) {
   const router = useRouter()
@@ -52,6 +55,7 @@ export default function Inventory({ devices }: { devices: Device[] }) {
     marca: '',
     modelo: '',
     versionSoftware: '',
+    credentialId: '',
     serial: '',
     assetTag: '',
     descripcion: ''
@@ -60,22 +64,25 @@ export default function Inventory({ devices }: { devices: Device[] }) {
   const [search, setSearch] = useState('')
   const [sites, setSites] = useState<Option[]>([])
   const [brands, setBrands] = useState<Option[]>([])
+  const [creds, setCreds] = useState<CredentialOption[]>([])
   const onClose = () => setIsOpen(false)
 
-  function handleChange(e: React.ChangeEvent<HTMLInputElement>) {
+  function handleChange(e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) {
     setForm({ ...form, [e.target.name]: e.target.value })
   }
 
   useEffect(() => {
     fetch('/api/sites').then(res => res.json()).then(setSites)
     fetch('/api/brands').then(res => res.json()).then(setBrands)
+    fetch('/api/credentials').then(res => res.json()).then(setCreds)
   }, [])
 
   async function handleAdd() {
+    const payload = { ...form, credentialId: form.credentialId ? Number(form.credentialId) : null }
     await fetch('/api/devices', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(form)
+      body: JSON.stringify(payload)
     })
     setForm({
       ipGestion: '',
@@ -86,6 +93,7 @@ export default function Inventory({ devices }: { devices: Device[] }) {
       marca: '',
       modelo: '',
       versionSoftware: '',
+      credentialId: '',
       serial: '',
       assetTag: '',
       descripcion: ''
@@ -170,6 +178,15 @@ export default function Inventory({ devices }: { devices: Device[] }) {
               <Input name='versionSoftware' value={form.versionSoftware} onChange={handleChange} />
             </FormControl>
             <FormControl mb={2}>
+              <FormLabel>Usuario</FormLabel>
+              <select name='credentialId' value={form.credentialId} onChange={handleChange} style={{ width: '100%', padding: '8px', borderRadius: '4px' }}>
+                <option value=''>Seleccione...</option>
+                {creds.map((c) => (
+                  <option key={c.id} value={c.id}>{c.usuario}</option>
+                ))}
+              </select>
+            </FormControl>
+            <FormControl mb={2}>
               <FormLabel>Serial</FormLabel>
               <Input name='serial' value={form.serial} onChange={handleChange} />
             </FormControl>
@@ -202,6 +219,7 @@ export default function Inventory({ devices }: { devices: Device[] }) {
             <Th>Serial</Th>
             <Th>Asset Tag</Th>
             <Th>Descripción</Th>
+            <Th>Usuario</Th>
             <Th>Acciones</Th>
           </Tr>
         </Thead>
@@ -219,6 +237,7 @@ export default function Inventory({ devices }: { devices: Device[] }) {
               <Td>{d.serial}</Td>
               <Td>{d.assetTag}</Td>
               <Td>{d.descripcion}</Td>
+              <Td>{d.credential ? d.credential.usuario : ''}</Td>
               <Td>
                 <Button size='sm' mr={2} onClick={() => router.push(`/inventory/${d.id}`)}>Editar</Button>
                 <Button size='sm' colorScheme='red' onClick={() => handleDelete(d.id)}>Eliminar</Button>
@@ -242,10 +261,11 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
     }
   }
 
-  const devices = await prisma.device.findMany()
-  const serializedDevices = devices.map((d) => ({
+  const devicesWithCred = await prisma.device.findMany({ include: { credential: true } })
+  const serializedDevices = devicesWithCred.map((d) => ({
     ...d,
-    createdAt: d.createdAt.toISOString()
+    createdAt: d.createdAt.toISOString(),
+    credential: d.credential
   }))
   return {
     props: { devices: serializedDevices }
