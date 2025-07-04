@@ -28,3 +28,15 @@ model Device {
   serial         String?
   createdAt      DateTime @default(now())
 }
+
+model Site {
+  id        Int      @id @default(autoincrement())
+  name      String   @unique
+  createdAt DateTime @default(now())
+}
+
+model Brand {
+  id        Int      @id @default(autoincrement())
+  name      String   @unique
+  createdAt DateTime @default(now())
+}
