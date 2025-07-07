@@ -4,8 +4,12 @@ import {
   Box,
   Heading,
   Text,
-  List,
-  ListItem,
+  Table,
+  Thead,
+  Tbody,
+  Tr,
+  Th,
+  Td,
   Stack,
   Flex
 } from '@chakra-ui/react'
@@ -83,14 +87,22 @@ export default function ViewDevice({ device }: { device: Device }) {
             <Box mt={4}>
               <Heading size='sm' mb={2}>Interfaces</Heading>
               <Text mb={2} fontWeight='bold'>Cantidad: {device.interfaces.length}</Text>
-              <List spacing={1}>
-                {device.interfaces.map((i) => (
-                  <ListItem key={i.id}>
-                    {i.name}
-                    {i.description ? ` - ${i.description}` : ''}
-                  </ListItem>
-                ))}
-              </List>
+              <Table size='sm'>
+                <Thead>
+                  <Tr>
+                    <Th>Nombre</Th>
+                    <Th>Descripci\u00f3n</Th>
+                  </Tr>
+                </Thead>
+                <Tbody>
+                  {device.interfaces.map((i) => (
+                    <Tr key={i.id}>
+                      <Td>{i.name}</Td>
+                      <Td>{i.description || '-'}</Td>
+                    </Tr>
+                  ))}
+                </Tbody>
+              </Table>
             </Box>
           )}
         </Box>
