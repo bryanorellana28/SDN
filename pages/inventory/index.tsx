@@ -63,7 +63,10 @@ export default function Inventory({ devices }: { devices: Device[] }) {
   const [isOpen, setIsOpen] = useState(false)
   const [search, setSearch] = useState('')
   const [sites, setSites] = useState<Option[]>([])
-  const [brands, setBrands] = useState<Option[]>([])
+  const brandOptions = [
+    { id: 1, name: 'Cisco' },
+    { id: 2, name: 'Mikrotik' }
+  ]
   const [creds, setCreds] = useState<CredentialOption[]>([])
   const [error, setError] = useState('')
   const onClose = () => setIsOpen(false)
@@ -74,13 +77,16 @@ export default function Inventory({ devices }: { devices: Device[] }) {
 
   useEffect(() => {
     fetch('/api/sites').then(res => res.json()).then(setSites)
-    fetch('/api/brands').then(res => res.json()).then(setBrands)
     fetch('/api/credentials').then(res => res.json()).then(setCreds)
   }, [])
 
   async function handleAdd() {
     setError('')
-    const fieldsFilled = Object.values(form).every((v) => v !== '')
+    const requiredFields = ['ipGestion','nombre','sitio','rack','tipoEquipo','marca','versionSoftware','credentialId']
+    if (form.marca !== 'Mikrotik') {
+      requiredFields.push('modelo','serial')
+    }
+    const fieldsFilled = requiredFields.every((key) => (form as any)[key] !== '')
     if (!fieldsFilled) {
       setError('Todos los campos son obligatorios')
       return
@@ -95,15 +101,23 @@ export default function Inventory({ devices }: { devices: Device[] }) {
     const testRes = await fetch('/api/test-ssh', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ host: form.ipGestion, username: cred.usuario, password: cred.contrasena })
+      body: JSON.stringify({ host: form.ipGestion, username: cred.usuario, password: cred.contrasena, brand: form.marca })
     })
     const testJson = await testRes.json()
     if (!testJson.success) {
-      setError('Conexión SSH fallida')
+      alert('Conexión SSH fallida')
       return
     }
 
-    const payload = { ...form, credentialId: Number(form.credentialId) }
+    let model = form.modelo
+    let serial = form.serial
+    if (form.marca === 'Mikrotik' && testJson.output) {
+      const modelMatch = /model:\s*(.+)/.exec(testJson.output)
+      const serialMatch = /serial-number:\s*(.+)/.exec(testJson.output)
+      model = modelMatch ? modelMatch[1].trim() : ''
+      serial = serialMatch ? serialMatch[1].trim() : ''
+    }
+    const payload = { ...form, modelo: model, serial, credentialId: Number(form.credentialId) }
     await fetch('/api/devices', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -124,6 +138,7 @@ export default function Inventory({ devices }: { devices: Device[] }) {
       descripcion: ''
     })
     onClose()
+    alert('Dispositivo agregado exitosamente')
     router.reload()
   }
 
@@ -188,21 +203,29 @@ export default function Inventory({ devices }: { devices: Device[] }) {
             </FormControl>
             <FormControl mb={2}>
               <FormLabel>Tipo de equipo</FormLabel>
-              <Input name='tipoEquipo' value={form.tipoEquipo} onChange={handleChange} />
+              <select name='tipoEquipo' value={form.tipoEquipo} onChange={handleChange} style={{ width: '100%', padding: '8px', borderRadius: '4px' }}>
+                <option value=''>Seleccione...</option>
+                <option value='router-nodo'>router-nodo</option>
+                <option value='router-cliente'>router-cliente</option>
+                <option value='switch-nodo'>switch-nodo</option>
+                <option value='switch-cliente'>switch-cliente</option>
+              </select>
             </FormControl>
             <FormControl mb={2}>
               <FormLabel>Marca</FormLabel>
               <select name='marca' value={form.marca} onChange={handleChange} style={{ width: '100%', padding: '8px', borderRadius: '4px' }}>
                 <option value=''>Seleccione...</option>
-                {brands.map((b) => (
+                {brandOptions.map((b) => (
                   <option key={b.id} value={b.name}>{b.name}</option>
                 ))}
               </select>
             </FormControl>
-            <FormControl mb={2}>
-              <FormLabel>Modelo</FormLabel>
-              <Input name='modelo' value={form.modelo} onChange={handleChange} />
-            </FormControl>
+            {form.marca !== 'Mikrotik' && (
+              <FormControl mb={2}>
+                <FormLabel>Modelo</FormLabel>
+                <Input name='modelo' value={form.modelo} onChange={handleChange} />
+              </FormControl>
+            )}
             <FormControl mb={2}>
               <FormLabel>Versión de software</FormLabel>
               <Input name='versionSoftware' value={form.versionSoftware} onChange={handleChange} />
@@ -216,10 +239,12 @@ export default function Inventory({ devices }: { devices: Device[] }) {
                 ))}
               </select>
             </FormControl>
-            <FormControl mb={2}>
-              <FormLabel>Serial</FormLabel>
-              <Input name='serial' value={form.serial} onChange={handleChange} />
-            </FormControl>
+            {form.marca !== 'Mikrotik' && (
+              <FormControl mb={2}>
+                <FormLabel>Serial</FormLabel>
+                <Input name='serial' value={form.serial} onChange={handleChange} />
+              </FormControl>
+            )}
             <FormControl mb={2}>
               <FormLabel>Asset Tag</FormLabel>
               <Input name='assetTag' value={form.assetTag} onChange={handleChange} />
