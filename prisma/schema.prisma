@@ -18,13 +18,16 @@ model User {
 model Device {
   id             Int      @id @default(autoincrement())
   ipGestion      String
-  nombre         String
+  nombre         String?
   sitio          String
   rack           String
   tipoEquipo     String
   marca          String
-  modelo         String
-  versionSoftware String
+  modelo         String?
+  versionSoftware String?
+  hostname       String?
+  cpu            String?
+  boardName      String?
   credentialId   Int?
   credential     Credential? @relation(fields: [credentialId], references: [id])
   serial         String?
@@ -33,6 +36,7 @@ model Device {
   createdAt      DateTime @default(now())
   backups        Backup[]
   schedules      Schedule[]
+  interfaces     Interface[]
 }
 
 model Site {
@@ -76,4 +80,13 @@ model Schedule {
   period      String
   nextRun     DateTime
   createdAt   DateTime   @default(now())
+}
+
+model Interface {
+  id          Int      @id @default(autoincrement())
+  device      Device   @relation(fields: [deviceId], references: [id])
+  deviceId    Int
+  name        String
+  description String?
+  createdAt   DateTime @default(now())
 }

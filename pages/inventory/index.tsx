@@ -27,38 +27,27 @@ import { prisma } from '../../lib/prisma'
 interface Device {
   id: number
   ipGestion: string
-  nombre: string
   sitio: string
   rack: string
   tipoEquipo: string
   marca: string
-  modelo: string
-  versionSoftware: string
-  credentialId?: number | null
-  credential?: { id: number; usuario: string } | null
-  serial?: string | null
-  assetTag?: string | null
-  descripcion?: string | null
+  hostname?: string | null
+  versionSoftware?: string | null
+  cpu?: string | null
+  boardName?: string | null
+  interfaces?: { id: number; name: string; description?: string | null }[]
 }
 
 interface Option { id: number; name: string }
-interface CredentialOption { id: number; usuario: string; contrasena: string }
 
 export default function Inventory({ devices }: { devices: Device[] }) {
   const router = useRouter()
   const [form, setForm] = useState({
     ipGestion: '',
-    nombre: '',
     sitio: '',
     rack: '',
     tipoEquipo: '',
-    marca: '',
-    modelo: '',
-    versionSoftware: '',
-    credentialId: '',
-    serial: '',
-    assetTag: '',
-    descripcion: ''
+    marca: ''
   })
   const [isOpen, setIsOpen] = useState(false)
   const [search, setSearch] = useState('')
@@ -67,7 +56,6 @@ export default function Inventory({ devices }: { devices: Device[] }) {
     { id: 1, name: 'Cisco' },
     { id: 2, name: 'Mikrotik' }
   ]
-  const [creds, setCreds] = useState<CredentialOption[]>([])
   const [error, setError] = useState('')
   const onClose = () => setIsOpen(false)
 
@@ -77,47 +65,18 @@ export default function Inventory({ devices }: { devices: Device[] }) {
 
   useEffect(() => {
     fetch('/api/sites').then(res => res.json()).then(setSites)
-    fetch('/api/credentials').then(res => res.json()).then(setCreds)
   }, [])
 
   async function handleAdd() {
     setError('')
-    const requiredFields = ['ipGestion','nombre','sitio','rack','tipoEquipo','marca','versionSoftware','credentialId']
-    if (form.marca !== 'Mikrotik') {
-      requiredFields.push('modelo','serial')
-    }
-    const fieldsFilled = requiredFields.every((key) => (form as any)[key] !== '')
+    const required = ['ipGestion','sitio','rack','tipoEquipo','marca']
+    const fieldsFilled = required.every((key) => (form as any)[key] !== '')
     if (!fieldsFilled) {
       setError('Todos los campos son obligatorios')
       return
     }
 
-    const cred = creds.find(c => c.id === Number(form.credentialId))
-    if (!cred) {
-      setError('Credencial no válida')
-      return
-    }
-
-    const testRes = await fetch('/api/test-ssh', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ host: form.ipGestion, username: cred.usuario, password: cred.contrasena, brand: form.marca })
-    })
-    const testJson = await testRes.json()
-    if (!testJson.success) {
-      alert('Conexión SSH fallida')
-      return
-    }
-
-    let model = form.modelo
-    let serial = form.serial
-    if (form.marca === 'Mikrotik' && testJson.output) {
-      const modelMatch = /model:\s*(.+)/.exec(testJson.output)
-      const serialMatch = /serial-number:\s*(.+)/.exec(testJson.output)
-      model = modelMatch ? modelMatch[1].trim() : ''
-      serial = serialMatch ? serialMatch[1].trim() : ''
-    }
-    const payload = { ...form, modelo: model, serial, credentialId: Number(form.credentialId) }
+    const payload = { ...form }
     await fetch('/api/devices', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -125,17 +84,10 @@ export default function Inventory({ devices }: { devices: Device[] }) {
     })
     setForm({
       ipGestion: '',
-      nombre: '',
       sitio: '',
       rack: '',
       tipoEquipo: '',
-      marca: '',
-      modelo: '',
-      versionSoftware: '',
-      credentialId: '',
-      serial: '',
-      assetTag: '',
-      descripcion: ''
+      marca: ''
     })
     onClose()
     alert('Dispositivo agregado exitosamente')
@@ -185,10 +137,6 @@ export default function Inventory({ devices }: { devices: Device[] }) {
               <Input name='ipGestion' value={form.ipGestion} onChange={handleChange} />
             </FormControl>
             <FormControl mb={2}>
-              <FormLabel>Nombre</FormLabel>
-              <Input name='nombre' value={form.nombre} onChange={handleChange} />
-            </FormControl>
-            <FormControl mb={2}>
               <FormLabel>Sitio</FormLabel>
               <select name='sitio' value={form.sitio} onChange={handleChange} style={{ width: '100%', padding: '8px', borderRadius: '4px' }}>
                 <option value=''>Seleccione...</option>
@@ -220,39 +168,7 @@ export default function Inventory({ devices }: { devices: Device[] }) {
                 ))}
               </select>
             </FormControl>
-            {form.marca !== 'Mikrotik' && (
-              <FormControl mb={2}>
-                <FormLabel>Modelo</FormLabel>
-                <Input name='modelo' value={form.modelo} onChange={handleChange} />
-              </FormControl>
-            )}
-            <FormControl mb={2}>
-              <FormLabel>Versión de software</FormLabel>
-              <Input name='versionSoftware' value={form.versionSoftware} onChange={handleChange} />
-            </FormControl>
-            <FormControl mb={2}>
-              <FormLabel>Usuario</FormLabel>
-              <select name='credentialId' value={form.credentialId} onChange={handleChange} style={{ width: '100%', padding: '8px', borderRadius: '4px' }}>
-                <option value=''>Seleccione...</option>
-                {creds.map((c) => (
-                  <option key={c.id} value={c.id}>{c.usuario}</option>
-                ))}
-              </select>
-            </FormControl>
-            {form.marca !== 'Mikrotik' && (
-              <FormControl mb={2}>
-                <FormLabel>Serial</FormLabel>
-                <Input name='serial' value={form.serial} onChange={handleChange} />
-              </FormControl>
-            )}
-            <FormControl mb={2}>
-              <FormLabel>Asset Tag</FormLabel>
-              <Input name='assetTag' value={form.assetTag} onChange={handleChange} />
-            </FormControl>
-            <FormControl mb={2}>
-              <FormLabel>Descripción</FormLabel>
-              <Input name='descripcion' value={form.descripcion} onChange={handleChange} />
-            </FormControl>
+
           </DrawerBody>
           <DrawerFooter>
             <Button variant='outline' mr={3} onClick={onClose}>Cancelar</Button>
@@ -264,17 +180,11 @@ export default function Inventory({ devices }: { devices: Device[] }) {
         <Thead>
           <Tr>
             <Th>IP</Th>
-            <Th>Nombre</Th>
             <Th>Sitio</Th>
             <Th>Rack</Th>
             <Th>Tipo</Th>
             <Th>Marca</Th>
-            <Th>Modelo</Th>
-            <Th>Versión</Th>
-            <Th>Serial</Th>
-            <Th>Asset Tag</Th>
-            <Th>Descripción</Th>
-            <Th>Usuario</Th>
+            <Th>Hostname</Th>
             <Th>Acciones</Th>
           </Tr>
         </Thead>
@@ -282,19 +192,13 @@ export default function Inventory({ devices }: { devices: Device[] }) {
           {filteredDevices.map((d) => (
             <Tr key={d.id}>
               <Td>{d.ipGestion}</Td>
-              <Td>{d.nombre}</Td>
               <Td>{d.sitio}</Td>
               <Td>{d.rack}</Td>
               <Td>{d.tipoEquipo}</Td>
               <Td>{d.marca}</Td>
-              <Td>{d.modelo}</Td>
-              <Td>{d.versionSoftware}</Td>
-              <Td>{d.serial}</Td>
-              <Td>{d.assetTag}</Td>
-              <Td>{d.descripcion}</Td>
-              <Td>{d.credential ? d.credential.usuario : ''}</Td>
+              <Td>{d.hostname}</Td>
               <Td>
-                <Button size='sm' mr={2} onClick={() => router.push(`/inventory/${d.id}`)}>Editar</Button>
+                <Button size='sm' mr={2} onClick={() => router.push(`/inventory/${d.id}`)}>Ver</Button>
                 <Button size='sm' colorScheme='red' onClick={() => handleDelete(d.id)}>Eliminar</Button>
               </Td>
             </Tr>
@@ -316,13 +220,11 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
     }
   }
 
-  const devicesWithCred = await prisma.device.findMany({ include: { credential: true } })
+  const devicesWithCred = await prisma.device.findMany({ include: { interfaces: true } })
   const serializedDevices = devicesWithCred.map((d) => ({
     ...d,
     createdAt: d.createdAt.toISOString(),
-    credential: d.credential
-      ? { ...d.credential, createdAt: d.credential.createdAt.toISOString() }
-      : null
+    interfaces: d.interfaces.map(i => ({ ...i, createdAt: i.createdAt.toISOString() }))
   }))
   return {
     props: { devices: serializedDevices }

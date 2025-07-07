@@ -1,133 +1,48 @@
 import { GetServerSideProps } from 'next'
 import { getSession } from 'next-auth/react'
-import { useRouter } from 'next/router'
-import { useState, useEffect } from 'react'
-import {
-  Box,
-  Button,
-  FormControl,
-  FormLabel,
-  Heading,
-  Input
-} from '@chakra-ui/react'
+import { Box, Heading, Text, List, ListItem } from '@chakra-ui/react'
 import SidebarLayout from '../../components/SidebarLayout'
 import { prisma } from '../../lib/prisma'
 
+type Interface = { id: number; name: string; description?: string | null }
 interface Device {
   id: number
   ipGestion: string
-  nombre: string
   sitio: string
   rack: string
   tipoEquipo: string
   marca: string
-  modelo: string
-  versionSoftware: string
-  credentialId?: number | null
-  credential?: { id: number; usuario: string } | null
-  serial?: string | null
-  assetTag?: string | null
-  descripcion?: string | null
+  hostname?: string | null
+  versionSoftware?: string | null
+  cpu?: string | null
+  boardName?: string | null
+  interfaces: Interface[]
 }
 
-interface Option { id: number; name: string }
-interface CredentialOption { id: number; usuario: string; contrasena: string }
-
-export default function EditDevice({ device }: { device: Device }) {
-  const router = useRouter()
-  const [form, setForm] = useState({ ...device })
-  const [sites, setSites] = useState<Option[]>([])
-  const [brands, setBrands] = useState<Option[]>([])
-  const [creds, setCreds] = useState<CredentialOption[]>([])
-
-  function handleChange(e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) {
-    setForm({ ...form, [e.target.name]: e.target.value })
-  }
-
-  useEffect(() => {
-    fetch('/api/sites').then(res => res.json()).then(setSites)
-    fetch('/api/brands').then(res => res.json()).then(setBrands)
-    fetch('/api/credentials').then(res => res.json()).then(setCreds)
-  }, [])
-
-  async function handleSave() {
-    const payload = { ...form, credentialId: form.credentialId ? Number(form.credentialId) : null }
-    await fetch(`/api/devices/${device.id}`, {
-      method: 'PUT',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(payload)
-    })
-    router.push('/inventory')
-  }
-
+export default function ViewDevice({ device }: { device: Device }) {
   return (
     <SidebarLayout>
       <Box maxW='md' mx='auto'>
-        <Heading size='md' mb={4}>Editar Dispositivo</Heading>
-        <FormControl mb={2}>
-          <FormLabel>IP de gestión</FormLabel>
-          <Input name='ipGestion' value={form.ipGestion} onChange={handleChange} />
-        </FormControl>
-        <FormControl mb={2}>
-          <FormLabel>Nombre</FormLabel>
-          <Input name='nombre' value={form.nombre} onChange={handleChange} />
-        </FormControl>
-        <FormControl mb={2}>
-          <FormLabel>Sitio</FormLabel>
-          <select name='sitio' value={form.sitio} onChange={handleChange} style={{ width: '100%', padding: '8px', borderRadius: '4px' }}>
-            <option value=''>Seleccione...</option>
-            {sites.map((s) => (
-              <option key={s.id} value={s.name}>{s.name}</option>
-            ))}
-          </select>
-        </FormControl>
-        <FormControl mb={2}>
-          <FormLabel>Rack</FormLabel>
-          <Input name='rack' value={form.rack} onChange={handleChange} />
-        </FormControl>
-        <FormControl mb={2}>
-          <FormLabel>Tipo de equipo</FormLabel>
-          <Input name='tipoEquipo' value={form.tipoEquipo} onChange={handleChange} />
-        </FormControl>
-        <FormControl mb={2}>
-          <FormLabel>Marca</FormLabel>
-          <select name='marca' value={form.marca} onChange={handleChange} style={{ width: '100%', padding: '8px', borderRadius: '4px' }}>
-            <option value=''>Seleccione...</option>
-            {brands.map((b) => (
-              <option key={b.id} value={b.name}>{b.name}</option>
-            ))}
-          </select>
-        </FormControl>
-        <FormControl mb={2}>
-          <FormLabel>Modelo</FormLabel>
-          <Input name='modelo' value={form.modelo} onChange={handleChange} />
-        </FormControl>
-        <FormControl mb={2}>
-          <FormLabel>Versión de software</FormLabel>
-          <Input name='versionSoftware' value={form.versionSoftware} onChange={handleChange} />
-        </FormControl>
-        <FormControl mb={4}>
-          <FormLabel>Usuario</FormLabel>
-          <select name='credentialId' value={form.credentialId ?? ''} onChange={handleChange} style={{ width: '100%', padding: '8px', borderRadius: '4px' }}>
-            <option value=''>Seleccione...</option>
-            {creds.map((c) => (
-              <option key={c.id} value={c.id}>{c.usuario}</option>
-            ))}
-          </select>
-        </FormControl>
-        <FormControl mb={4}>
-          <FormLabel>Serial</FormLabel>
-          <Input name='serial' value={form.serial ?? ''} onChange={handleChange} />
-        </FormControl>
-        <FormControl mb={4}>
-          <FormLabel>Asset Tag</FormLabel>
-          <Input name='assetTag' value={form.assetTag ?? ''} onChange={handleChange} />
-        </FormControl>
-        <FormControl mb={4}>
-          <FormLabel>Descripción</FormLabel>
-          <Input name='descripcion' value={form.descripcion ?? ''} onChange={handleChange} />
-        </FormControl>
-        <Button onClick={handleSave} colorScheme='blue'>Guardar</Button>
+        <Heading size='md' mb={4}>Información del Dispositivo</Heading>
+        <Text><b>IP:</b> {device.ipGestion}</Text>
+        <Text><b>Sitio:</b> {device.sitio}</Text>
+        <Text><b>Rack:</b> {device.rack}</Text>
+        <Text><b>Tipo:</b> {device.tipoEquipo}</Text>
+        <Text><b>Marca:</b> {device.marca}</Text>
+        {device.hostname && <Text><b>Hostname:</b> {device.hostname}</Text>}
+        {device.versionSoftware && <Text><b>Versión:</b> {device.versionSoftware}</Text>}
+        {device.cpu && <Text><b>CPU:</b> {device.cpu}</Text>}
+        {device.boardName && <Text><b>Board:</b> {device.boardName}</Text>}
+        {device.interfaces.length > 0 && (
+          <Box mt={4}>
+            <Heading size='sm'>Interfaces</Heading>
+            <List spacing={1} mt={2}>
+              {device.interfaces.map((i) => (
+                <ListItem key={i.id}>{i.name}{i.description ? ` - ${i.description}` : ''}</ListItem>
+              ))}
+            </List>
+          </Box>
+        )}
       </Box>
     </SidebarLayout>
   )
@@ -143,20 +58,15 @@ export const getServerSideProps: GetServerSideProps = async ({ params, ...contex
       }
     }
   }
-
   const id = Number(params?.id)
-  const device = await prisma.device.findUnique({ where: { id }, include: { credential: true } })
+  const device = await prisma.device.findUnique({ where: { id }, include: { interfaces: true } })
   if (!device) {
     return { notFound: true }
   }
-  const serializedDevice = {
+  const serialized = {
     ...device,
     createdAt: device.createdAt.toISOString(),
-    credential: device.credential
-      ? { ...device.credential, createdAt: device.credential.createdAt.toISOString() }
-      : null
+    interfaces: device.interfaces.map(i => ({ ...i, createdAt: i.createdAt.toISOString() }))
   }
-  return {
-    props: { device: serializedDevice }
-  }
+  return { props: { device: serialized } }
 }
