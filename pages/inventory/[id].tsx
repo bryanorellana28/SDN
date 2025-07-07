@@ -82,6 +82,7 @@ export default function ViewDevice({ device }: { device: Device }) {
           {device.interfaces.length > 0 && (
             <Box mt={4}>
               <Heading size='sm' mb={2}>Interfaces</Heading>
+              <Text mb={2} fontWeight='bold'>Cantidad: {device.interfaces.length}</Text>
               <List spacing={1}>
                 {device.interfaces.map((i) => (
                   <ListItem key={i.id}>
