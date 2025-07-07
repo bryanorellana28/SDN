@@ -58,13 +58,21 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         if (board) data.boardName = board[1].trim()
         if (host) data.hostname = host[1].trim()
         ifOut.split('\n').forEach((l) => {
-          const match = /set \[ find default-name=(\S+) \].* name=(\S+)/.exec(l)
-          if (!match) return
-          const iface = match[1]
-          let desc = match[2]
-          const prefix = `${iface}-`
-          if (desc.startsWith(prefix)) desc = desc.slice(prefix.length)
-          interfaces.push({ name: iface, description: desc || undefined })
+          l = l.trim()
+          if (!l.startsWith('set')) return
+          const def = /default-name=(\S+)/.exec(l)
+          if (!def) return
+          const iface = def[1]
+          let desc: string | undefined
+          const nameMatch = /name=("([^"]+)"|\S+)/.exec(l)
+          if (nameMatch) {
+            let val = nameMatch[2] || nameMatch[1]
+            val = val.replace(/^"|"$/g, '')
+            const prefix = `${iface}-`
+            if (val.startsWith(prefix)) val = val.slice(prefix.length)
+            desc = val.trim() || undefined
+          }
+          interfaces.push({ name: iface, description: desc })
         })
       } catch (e) {
         console.error(e)
