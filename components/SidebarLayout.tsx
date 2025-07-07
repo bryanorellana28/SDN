@@ -1,5 +1,6 @@
 import { ReactNode, useState } from 'react'
 import NextLink from 'next/link'
+import { signOut } from 'next-auth/react'
 import { Box, Flex, Button, VStack, Text, Collapse } from '@chakra-ui/react'
 
 export default function SidebarLayout({ children }: { children: ReactNode }) {
@@ -7,11 +8,12 @@ export default function SidebarLayout({ children }: { children: ReactNode }) {
   const [openBackups, setOpenBackups] = useState(false)
   return (
     <Flex minH='100vh'>
-      <Box w='220px' bg='gray.800' color='white' p={4}>
-        <Text fontSize='lg' fontWeight='bold' mb={4}>
-          Menu
-        </Text>
-        <VStack align='stretch' spacing={2}>
+      <Box w='220px' bg='gray.800' color='white' p={4} display='flex' flexDirection='column' justifyContent='space-between'>
+        <Box>
+          <Text fontSize='lg' fontWeight='bold' mb={4}>
+            Menu
+          </Text>
+          <VStack align='stretch' spacing={2}>
           <Button
             as={NextLink}
             href='/dashboard'
@@ -115,6 +117,17 @@ export default function SidebarLayout({ children }: { children: ReactNode }) {
             </VStack>
           </Collapse>
         </VStack>
+        </Box>
+        <Button
+          mt={4}
+          bg='white'
+          color='gray.800'
+          _hover={{ bg: 'gray.200' }}
+          w='100%'
+          onClick={() => signOut()}
+        >
+          Logout
+        </Button>
       </Box>
       <Box flex='1' p={4} bg='gray.50'>
         {children}

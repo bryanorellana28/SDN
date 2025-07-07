@@ -7,7 +7,7 @@ export default function handler(req: NextApiRequest, res: NextApiResponse) {
     return
   }
 
-  const { host, username, password } = req.body
+  const { host, username, password, brand } = req.body
   if (!host || !username || !password) {
     res.status(400).json({ message: 'Missing parameters' })
     return
@@ -15,8 +15,27 @@ export default function handler(req: NextApiRequest, res: NextApiResponse) {
 
   const conn = new Client()
   conn.on('ready', () => {
-    conn.end()
-    res.status(200).json({ success: true })
+    if (brand === 'Mikrotik') {
+      conn.exec('system routerboard print', (err, stream) => {
+        if (err) {
+          conn.end()
+          res.status(200).json({ success: false, error: err.message })
+          return
+        }
+        let output = ''
+        stream.on('close', () => {
+          conn.end()
+          res.status(200).json({ success: true, output })
+        }).on('data', (data: Buffer) => {
+          output += data.toString()
+        }).stderr.on('data', (data: Buffer) => {
+          output += data.toString()
+        })
+      })
+    } else {
+      conn.end()
+      res.status(200).json({ success: true })
+    }
   }).on('error', (err) => {
     res.status(200).json({ success: false, error: err.message })
   }).connect({
