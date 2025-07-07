@@ -37,6 +37,8 @@ model Device {
   backups        Backup[]
   schedules      Schedule[]
   interfaces     Interface[]
+  srcConnections Connection[] @relation("SrcDeviceConnections")
+  dstConnections Connection[] @relation("DstDeviceConnections")
 }
 
 model Site {
@@ -89,4 +91,15 @@ model Interface {
   name        String
   description String?
   createdAt   DateTime @default(now())
+}
+
+model Connection {
+  id            Int      @id @default(autoincrement())
+  srcDeviceId   Int
+  srcInterface  String
+  dstDeviceId   Int
+  dstInterface  String
+  createdAt     DateTime @default(now())
+  srcDevice     Device   @relation("SrcDeviceConnections", fields: [srcDeviceId], references: [id])
+  dstDevice     Device   @relation("DstDeviceConnections", fields: [dstDeviceId], references: [id])
 }
