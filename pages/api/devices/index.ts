@@ -52,6 +52,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         if (board) data.boardName = board[1].trim()
         if (host) data.hostname = host[1].trim()
         ifOut.split('\n').forEach((l) => {
+          if (!/^\s*\d+\s/.test(l)) return
           const cols = l.trim().split(/\s+/)
           if (cols.length >= 3) {
             const full = cols[2]
