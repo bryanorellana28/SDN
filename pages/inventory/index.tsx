@@ -42,7 +42,7 @@ interface Device {
 }
 
 interface Option { id: number; name: string }
-interface CredentialOption { id: number; usuario: string }
+interface CredentialOption { id: number; usuario: string; contrasena: string }
 
 export default function Inventory({ devices }: { devices: Device[] }) {
   const router = useRouter()
@@ -65,6 +65,7 @@ export default function Inventory({ devices }: { devices: Device[] }) {
   const [sites, setSites] = useState<Option[]>([])
   const [brands, setBrands] = useState<Option[]>([])
   const [creds, setCreds] = useState<CredentialOption[]>([])
+  const [error, setError] = useState('')
   const onClose = () => setIsOpen(false)
 
   function handleChange(e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) {
@@ -78,7 +79,31 @@ export default function Inventory({ devices }: { devices: Device[] }) {
   }, [])
 
   async function handleAdd() {
-    const payload = { ...form, credentialId: form.credentialId ? Number(form.credentialId) : null }
+    setError('')
+    const fieldsFilled = Object.values(form).every((v) => v !== '')
+    if (!fieldsFilled) {
+      setError('Todos los campos son obligatorios')
+      return
+    }
+
+    const cred = creds.find(c => c.id === Number(form.credentialId))
+    if (!cred) {
+      setError('Credencial no válida')
+      return
+    }
+
+    const testRes = await fetch('/api/test-ssh', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ host: form.ipGestion, username: cred.usuario, password: cred.contrasena })
+    })
+    const testJson = await testRes.json()
+    if (!testJson.success) {
+      setError('Conexión SSH fallida')
+      return
+    }
+
+    const payload = { ...form, credentialId: Number(form.credentialId) }
     await fetch('/api/devices', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -135,6 +160,11 @@ export default function Inventory({ devices }: { devices: Device[] }) {
         <DrawerContent>
           <DrawerHeader>Agregar Dispositivo</DrawerHeader>
           <DrawerBody>
+            {error && (
+              <Box color='red.500' mb={2}>
+                {error}
+              </Box>
+            )}
             <FormControl mb={2}>
               <FormLabel>IP de gestión</FormLabel>
               <Input name='ipGestion' value={form.ipGestion} onChange={handleChange} />

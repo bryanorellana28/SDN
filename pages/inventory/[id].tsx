@@ -31,7 +31,7 @@ interface Device {
 }
 
 interface Option { id: number; name: string }
-interface CredentialOption { id: number; usuario: string }
+interface CredentialOption { id: number; usuario: string; contrasena: string }
 
 export default function EditDevice({ device }: { device: Device }) {
   const router = useRouter()
