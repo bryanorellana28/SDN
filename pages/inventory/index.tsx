@@ -39,6 +39,7 @@ interface Device {
 }
 
 interface Option { id: number; name: string }
+interface Credential { id: number; usuario: string; contrasena: string }
 
 export default function Inventory({ devices }: { devices: Device[] }) {
   const router = useRouter()
@@ -47,11 +48,13 @@ export default function Inventory({ devices }: { devices: Device[] }) {
     sitio: '',
     rack: '',
     tipoEquipo: '',
-    marca: ''
+    marca: '',
+    credentialId: ''
   })
   const [isOpen, setIsOpen] = useState(false)
   const [search, setSearch] = useState('')
   const [sites, setSites] = useState<Option[]>([])
+  const [creds, setCreds] = useState<Credential[]>([])
   const brandOptions = [
     { id: 1, name: 'Cisco' },
     { id: 2, name: 'Mikrotik' }
@@ -65,18 +68,44 @@ export default function Inventory({ devices }: { devices: Device[] }) {
 
   useEffect(() => {
     fetch('/api/sites').then(res => res.json()).then(setSites)
+    fetch('/api/credentials').then(res => res.json()).then((data) => {
+      setCreds(data.map((c: any) => ({ id: c.id, usuario: c.usuario, contrasena: c.contrasena })))
+    })
   }, [])
 
   async function handleAdd() {
     setError('')
-    const required = ['ipGestion','sitio','rack','tipoEquipo','marca']
+    const required = ['ipGestion','sitio','rack','tipoEquipo','marca','credentialId']
     const fieldsFilled = required.every((key) => (form as any)[key] !== '')
     if (!fieldsFilled) {
       setError('Todos los campos son obligatorios')
       return
     }
 
-    const payload = { ...form }
+    const cred = creds.find(c => c.id === Number(form.credentialId))
+    if (!cred) {
+      setError('Credencial inválida')
+      return
+    }
+
+    const testRes = await fetch('/api/test-ssh', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        host: form.ipGestion,
+        username: cred.usuario,
+        password: cred.contrasena,
+        brand: form.marca
+      })
+    })
+
+    const testData = await testRes.json()
+    if (!testData.success) {
+      setError(testData.error || 'Error al conectar via SSH')
+      return
+    }
+
+    const payload = { ...form, credentialId: Number(form.credentialId) }
     await fetch('/api/devices', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -87,7 +116,8 @@ export default function Inventory({ devices }: { devices: Device[] }) {
       sitio: '',
       rack: '',
       tipoEquipo: '',
-      marca: ''
+      marca: '',
+      credentialId: ''
     })
     onClose()
     alert('Dispositivo agregado exitosamente')
@@ -165,6 +195,15 @@ export default function Inventory({ devices }: { devices: Device[] }) {
                 <option value=''>Seleccione...</option>
                 {brandOptions.map((b) => (
                   <option key={b.id} value={b.name}>{b.name}</option>
+                ))}
+              </select>
+            </FormControl>
+            <FormControl mb={2}>
+              <FormLabel>Credencial</FormLabel>
+              <select name='credentialId' value={form.credentialId} onChange={handleChange} style={{ width: '100%', padding: '8px', borderRadius: '4px' }}>
+                <option value=''>Seleccione...</option>
+                {creds.map((c) => (
+                  <option key={c.id} value={c.id}>{c.usuario}</option>
                 ))}
               </select>
             </FormControl>
