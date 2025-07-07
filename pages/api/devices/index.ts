@@ -9,10 +9,16 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   }
 
   if (req.method === 'POST') {
-    const { ipGestion, sitio, rack, tipoEquipo, marca } = req.body
+    const { ipGestion, sitio, rack, tipoEquipo, marca, credentialId } = req.body
 
     let data: any = { ipGestion, sitio, rack, tipoEquipo, marca }
+    if (credentialId) data.credentialId = Number(credentialId)
     const interfaces: { name: string; description?: string }[] = []
+
+    let cred: { usuario: string; contrasena: string } | null = null
+    if (credentialId) {
+      cred = await prisma.credential.findUnique({ where: { id: Number(credentialId) } })
+    }
 
     async function runCmd(cmd: string): Promise<string> {
       return new Promise((resolve, reject) => {
@@ -31,8 +37,8 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
           .on('error', reject)
           .connect({
             host: ipGestion,
-            username: process.env.MIKROTIK_USER || 'admin',
-            password: process.env.MIKROTIK_PASS || '',
+            username: cred?.usuario || process.env.MIKROTIK_USER || 'admin',
+            password: cred?.contrasena || process.env.MIKROTIK_PASS || '',
             readyTimeout: 5000
           })
       })
