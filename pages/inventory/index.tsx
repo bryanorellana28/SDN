@@ -199,6 +199,7 @@ export default function Inventory({ devices }: { devices: Device[] }) {
               <Td>{d.hostname}</Td>
               <Td>
                 <Button size='sm' mr={2} onClick={() => router.push(`/inventory/${d.id}`)}>Ver</Button>
+                <Button size='sm' mr={2} onClick={() => router.push(`/inventory/edit/${d.id}`)}>Editar</Button>
                 <Button size='sm' colorScheme='red' onClick={() => handleDelete(d.id)}>Eliminar</Button>
               </Td>
             </Tr>
