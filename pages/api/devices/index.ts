@@ -1,6 +1,7 @@
 import type { NextApiRequest, NextApiResponse } from 'next'
 import { prisma } from '../../../lib/prisma'
 import { Client } from 'ssh2'
+import { parseInterfaceLine } from '../../../lib/mikrotik'
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   if (req.method === 'GET') {
@@ -58,21 +59,14 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         if (board) data.boardName = board[1].trim()
         if (host) data.hostname = host[1].trim()
         ifOut.split('\n').forEach((l) => {
-          l = l.trim()
-          if (!l.startsWith('set')) return
-          const def = /default-name=(\S+)/.exec(l)
-          if (!def) return
-          const iface = def[1]
-          let desc: string | undefined
-          const nameMatch = /name=("([^"]+)"|\S+)/.exec(l)
-          if (nameMatch) {
-            let val = nameMatch[2] || nameMatch[1]
-            val = val.replace(/^"|"$/g, '')
-            const prefix = `${iface}-`
-            if (val.startsWith(prefix)) val = val.slice(prefix.length)
-            desc = val.trim() || undefined
-          }
-          interfaces.push({ name: iface, description: desc })
+          const parsed = parseInterfaceLine(l)
+          if (!parsed) return
+          const { defaultName, name } = parsed
+          let val = name
+          const prefix = `${defaultName}-`
+          if (val.startsWith(prefix)) val = val.slice(prefix.length)
+          const desc = val.trim() || undefined
+          interfaces.push({ name: defaultName, description: desc })
         })
       } catch (e) {
         console.error(e)
