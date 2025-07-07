@@ -48,7 +48,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       try {
         const resOut = await runCmd('system resource print')
         const idOut = await runCmd('system identity print')
-        const ifOut = await runCmd('interface ethernet print')
+        const ifOut = await runCmd('interface ethernet export')
         const ver = /version:\s*([^\r\n]+)/.exec(resOut)
         const cpu = /cpu:\s*([^\r\n]+)/.exec(resOut)
         const board = /board-name:\s*([^\r\n]+)/.exec(resOut)
@@ -58,22 +58,13 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         if (board) data.boardName = board[1].trim()
         if (host) data.hostname = host[1].trim()
         ifOut.split('\n').forEach((l) => {
-          if (!/^\s*\d+\s/.test(l)) return
-          const cols = l.trim().split(/\s+/)
-          if (cols.length >= 3) {
-            const full = cols[2]
-            let name = full
-            let desc = ''
-            const parts = full.split('-')
-            if (parts[0] === 'sfp') {
-              name = parts.slice(0, 2).join('-')
-              desc = parts.slice(2).join('-')
-            } else {
-              name = parts[0]
-              desc = parts.slice(1).join('-')
-            }
-            interfaces.push({ name, description: desc || undefined })
-          }
+          const match = /set \[ find default-name=(\S+) \].* name=(\S+)/.exec(l)
+          if (!match) return
+          const iface = match[1]
+          let desc = match[2]
+          const prefix = `${iface}-`
+          if (desc.startsWith(prefix)) desc = desc.slice(prefix.length)
+          interfaces.push({ name: iface, description: desc || undefined })
         })
       } catch (e) {
         console.error(e)
