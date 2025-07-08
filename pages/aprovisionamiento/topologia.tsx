@@ -2,6 +2,7 @@ import { GetServerSideProps } from 'next'
 import { getSession } from 'next-auth/react'
 import { useState } from 'react'
 import { Box, Heading, Select, Button, Flex, Text } from '@chakra-ui/react'
+import { GraphCanvas } from 'reagraph'
 import SidebarLayout from '../../components/SidebarLayout'
 import { prisma } from '../../lib/prisma'
 
@@ -16,7 +17,17 @@ export default function Topologia({ devices, initialConnections }: { devices: De
   const [connections, setConnections] = useState<Connection[]>(initialConnections)
   const [editId, setEditId] = useState<number | null>(null)
 
-  const positions = devices.map((_, idx) => ({ x: 120 + idx * 180, y: 120 }))
+  const nodes = devices.map((d) => ({
+    id: String(d.id),
+    label: d.hostname || d.ipGestion
+  }))
+
+  const edges = connections.map((c) => ({
+    id: String(c.id),
+    source: String(c.srcDeviceId),
+    target: String(c.dstDeviceId),
+    label: `${c.srcInterface} → ${c.dstInterface}`
+  }))
 
   async function handleAdd() {
     if (!srcId || !srcIf || !dstId || !dstIf) return
@@ -67,27 +78,9 @@ export default function Topologia({ devices, initialConnections }: { devices: De
     <SidebarLayout>
       <Box>
         <Heading size='md' mb={4}>Topolog\u00eda</Heading>
-        <svg width='100%' height='350' style={{ border: '1px solid #ccc' }}>
-          <defs>
-            <marker id='arrow' markerWidth='10' markerHeight='10' refX='8' refY='5' orient='auto-start-reverse'>
-              <path d='M0,0 L10,5 L0,10 z' fill='#4A5568' />
-            </marker>
-          </defs>
-          {devices.map((d, i) => (
-            <g key={d.id} transform={`translate(${positions[i].x}, ${positions[i].y})`}>
-              <circle r='25' fill='#4299e1' />
-              <text x='-20' y='35' fontSize='12' fill='white'>{d.hostname || d.ipGestion}</text>
-            </g>
-          ))}
-          {connections.map((c) => {
-            const si = devices.findIndex(d => d.id === c.srcDeviceId)
-            const di = devices.findIndex(d => d.id === c.dstDeviceId)
-            if (si === -1 || di === -1) return null
-            const s = positions[si]
-            const t = positions[di]
-            return <line key={c.id} x1={s.x} y1={s.y} x2={t.x} y2={t.y} stroke='#4A5568' strokeWidth={2} markerEnd='url(#arrow)' />
-          })}
-        </svg>
+        <Box h='350px' border='1px solid #ccc'>
+          <GraphCanvas nodes={nodes} edges={edges} />
+        </Box>
         <Flex mt={4} gap={2} flexWrap='wrap'>
           <Select placeholder='Origen' value={srcId} onChange={e => { setSrcId(e.target.value); setSrcIf('') }}>
             {devices.map(d => (
