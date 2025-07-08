@@ -14,9 +14,9 @@ interface Device { id: number; nombre: string }
 interface Credential { id: number; usuario: string }
 interface Schedule { id: number; device: Device; credential: Credential; period: string; nextRun: string }
 
-export default function Programacion({ devices, creds, schedules }: { devices: Device[]; creds: Credential[]; schedules: Schedule[] }) {
+export default function Programacion({ devices, schedules }: { devices: Device[]; schedules: Schedule[] }) {
   const router = useRouter()
-  const [form, setForm] = useState({ deviceId: '', credentialId: '', period: 'DAILY' })
+  const [form, setForm] = useState({ deviceId: '', period: 'DAILY' })
   const [isOpen, setIsOpen] = useState(false)
   const onClose = () => setIsOpen(false)
 
@@ -28,7 +28,7 @@ export default function Programacion({ devices, creds, schedules }: { devices: D
     await fetch('/api/schedules', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ ...form, deviceId: Number(form.deviceId), credentialId: Number(form.credentialId) })
+      body: JSON.stringify({ deviceId: Number(form.deviceId), period: form.period })
     })
     onClose()
     router.reload()
@@ -54,13 +54,6 @@ export default function Programacion({ devices, creds, schedules }: { devices: D
               </Select>
             </FormControl>
             <FormControl mb={2}>
-              <FormLabel>Credencial</FormLabel>
-              <Select name='credentialId' value={form.credentialId} onChange={handleChange}>
-                <option value=''>Seleccione...</option>
-                {creds.map(c => <option key={c.id} value={c.id}>{c.usuario}</option>)}
-              </Select>
-            </FormControl>
-            <FormControl mb={2}>
               <FormLabel>Periodo</FormLabel>
               <Select name='period' value={form.period} onChange={handleChange}>
                 <option value='DAILY'>1 Día</option>
@@ -83,6 +76,7 @@ export default function Programacion({ devices, creds, schedules }: { devices: D
             <Th>Usuario</Th>
             <Th>Periodo</Th>
             <Th>Próxima Ejecución</Th>
+            <Th>Acciones</Th>
           </Tr>
         </Thead>
         <Tbody>
@@ -92,6 +86,9 @@ export default function Programacion({ devices, creds, schedules }: { devices: D
               <Td>{s.credential.usuario}</Td>
               <Td>{s.period}</Td>
               <Td>{new Date(s.nextRun).toLocaleString()}</Td>
+              <Td>
+                <Button size='sm' onClick={() => router.push(`/backups/programacion/${s.id}`)}>Sacar backup ahora</Button>
+              </Td>
             </Tr>
           ))}
         </Tbody>
@@ -106,8 +103,7 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
     return { redirect: { destination: '/login', permanent: false } }
   }
   const devices = await prisma.device.findMany({ select: { id: true, nombre: true } })
-  const creds = await prisma.credential.findMany({ select: { id: true, usuario: true } })
   const schedules = await prisma.schedule.findMany({ include: { device: true, credential: true } })
   const serialized = schedules.map(s => ({ ...s, nextRun: s.nextRun.toISOString(), createdAt: s.createdAt.toISOString() }))
-  return { props: { devices, creds, schedules: serialized } }
+  return { props: { devices, schedules: serialized } }
 }
