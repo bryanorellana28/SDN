@@ -3,24 +3,25 @@ import { exec } from 'child_process'
 
 let started = false
 
-function runBackup(scheduleId: number) {
-  prisma.schedule.findUnique({ where: { id: scheduleId }, include: { device: true, credential: true } })
-    .then(async sched => {
-      if (!sched) return
-      const command = sched.device.marca.toLowerCase().includes('mikrotik') ? 'export' : 'show run'
-      const sshCmd = `ssh ${sched.credential.usuario}@${sched.device.ipGestion} "${command}"`
-      exec(sshCmd, async (err, stdout, stderr) => {
-        const content = err ? stderr : stdout
-        await prisma.backup.create({
-          data: {
-            deviceId: sched.deviceId,
-            content
-          }
-        })
-        const next = getNextRun(sched.period)
-        await prisma.schedule.update({ where: { id: sched.id }, data: { nextRun: next } })
+export async function runBackup(scheduleId: number): Promise<void> {
+  const sched = await prisma.schedule.findUnique({ where: { id: scheduleId }, include: { device: true, credential: true } })
+  if (!sched) return
+  const command = sched.device.marca.toLowerCase().includes('mikrotik') ? 'export' : 'show run'
+  const sshCmd = `ssh ${sched.credential.usuario}@${sched.device.ipGestion} "${command}"`
+  await new Promise<void>((resolve) => {
+    exec(sshCmd, async (err, stdout, stderr) => {
+      const content = err ? stderr : stdout
+      await prisma.backup.create({
+        data: {
+          deviceId: sched.deviceId,
+          content
+        }
       })
+      const next = getNextRun(sched.period)
+      await prisma.schedule.update({ where: { id: sched.id }, data: { nextRun: next } })
+      resolve()
     })
+  })
 }
 
 function getNextRun(period: string) {

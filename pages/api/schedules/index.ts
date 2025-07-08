@@ -10,9 +10,13 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   }
 
   if (req.method === 'POST') {
-    const { deviceId, credentialId, period } = req.body
+    const { deviceId, period } = req.body
+    const device = await prisma.device.findUnique({ where: { id: Number(deviceId) } })
+    if (!device || !device.credentialId) {
+      return res.status(400).json({ message: 'Credencial no encontrada para el dispositivo' })
+    }
     const nextRun = new Date()
-    const sched = await prisma.schedule.create({ data: { deviceId: Number(deviceId), credentialId: Number(credentialId), period, nextRun } })
+    const sched = await prisma.schedule.create({ data: { deviceId: Number(deviceId), credentialId: device.credentialId, period, nextRun } })
     return res.status(201).json(sched)
   }
 

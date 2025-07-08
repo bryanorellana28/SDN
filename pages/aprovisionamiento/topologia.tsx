@@ -26,17 +26,22 @@ export default function Topologia({ devices, initialConnections }: { devices: De
 
   const [nodes, setNodes, onNodesChange] = useNodesState(initialNodes)
 
-  const edges: Edge[] = useMemo(
-    () =>
-      connections.map((c) => ({
+  const edges: Edge[] = useMemo(() => {
+    const count: Record<string, number> = {}
+    return connections.map((c) => {
+      const key = `${c.srcDeviceId}-${c.dstDeviceId}`
+      const idx = (count[key] = (count[key] || 0) + 1)
+      const offset = (idx - 1) * 15
+      return {
         id: String(c.id),
         source: String(c.srcDeviceId),
         target: String(c.dstDeviceId),
+        type: 'smoothstep',
         label: `${c.srcInterface} → ${c.dstInterface}`,
-        labelStyle: { fill: '#1a202c', fontWeight: 600, fontSize: 12 }
-      })),
-    [connections]
-  )
+        labelStyle: { fill: '#1a202c', fontWeight: 600, fontSize: 12, transform: `translateY(${offset}px)` }
+      }
+    })
+  }, [connections])
 
   async function handleAdd() {
     if (!srcId || !srcIf || !dstId || !dstIf) return
