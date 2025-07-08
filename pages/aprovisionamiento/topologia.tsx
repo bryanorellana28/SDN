@@ -2,7 +2,8 @@ import { GetServerSideProps } from 'next'
 import { getSession } from 'next-auth/react'
 import { useState } from 'react'
 import { Box, Heading, Select, Button, Flex, Text } from '@chakra-ui/react'
-import { GraphCanvas } from 'reagraph'
+import ReactFlow from 'reactflow'
+import 'reactflow/dist/style.css'
 import SidebarLayout from '../../components/SidebarLayout'
 import { prisma } from '../../lib/prisma'
 
@@ -17,9 +18,10 @@ export default function Topologia({ devices, initialConnections }: { devices: De
   const [connections, setConnections] = useState<Connection[]>(initialConnections)
   const [editId, setEditId] = useState<number | null>(null)
 
-  const nodes = devices.map((d) => ({
+  const nodes = devices.map((d, idx) => ({
     id: String(d.id),
-    label: d.hostname || d.ipGestion
+    data: { label: d.hostname || d.ipGestion },
+    position: { x: idx * 100, y: 0 }
   }))
 
   const edges = connections.map((c) => ({
@@ -79,7 +81,7 @@ export default function Topologia({ devices, initialConnections }: { devices: De
       <Box>
         <Heading size='md' mb={4}>Topolog\u00eda</Heading>
         <Box h='350px' border='1px solid #ccc'>
-          <GraphCanvas nodes={nodes} edges={edges} />
+          <ReactFlow nodes={nodes} edges={edges} fitView style={{ width: '100%', height: '100%' }} />
         </Box>
         <Flex mt={4} gap={2} flexWrap='wrap'>
           <Select placeholder='Origen' value={srcId} onChange={e => { setSrcId(e.target.value); setSrcIf('') }}>
