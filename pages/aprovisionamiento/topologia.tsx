@@ -1,8 +1,8 @@
 import { GetServerSideProps } from 'next'
 import { getSession } from 'next-auth/react'
-import { useState } from 'react'
+import { useState, useMemo } from 'react'
 import { Box, Heading, Select, Button, Flex, Text } from '@chakra-ui/react'
-import ReactFlow from 'reactflow'
+import ReactFlow, { useNodesState, Background, Node, Edge } from 'reactflow'
 import 'reactflow/dist/style.css'
 import SidebarLayout from '../../components/SidebarLayout'
 import { prisma } from '../../lib/prisma'
@@ -18,18 +18,25 @@ export default function Topologia({ devices, initialConnections }: { devices: De
   const [connections, setConnections] = useState<Connection[]>(initialConnections)
   const [editId, setEditId] = useState<number | null>(null)
 
-  const nodes = devices.map((d, idx) => ({
+  const initialNodes: Node[] = devices.map((d, idx) => ({
     id: String(d.id),
     data: { label: d.hostname || d.ipGestion },
-    position: { x: idx * 100, y: 0 }
+    position: { x: idx * 150, y: 50 }
   }))
 
-  const edges = connections.map((c) => ({
-    id: String(c.id),
-    source: String(c.srcDeviceId),
-    target: String(c.dstDeviceId),
-    label: `${c.srcInterface} → ${c.dstInterface}`
-  }))
+  const [nodes, setNodes, onNodesChange] = useNodesState(initialNodes)
+
+  const edges: Edge[] = useMemo(
+    () =>
+      connections.map((c) => ({
+        id: String(c.id),
+        source: String(c.srcDeviceId),
+        target: String(c.dstDeviceId),
+        label: `${c.srcInterface} → ${c.dstInterface}`,
+        labelStyle: { fill: '#1a202c', fontWeight: 600, fontSize: 12 }
+      })),
+    [connections]
+  )
 
   async function handleAdd() {
     if (!srcId || !srcIf || !dstId || !dstIf) return
@@ -81,7 +88,15 @@ export default function Topologia({ devices, initialConnections }: { devices: De
       <Box>
         <Heading size='md' mb={4}>Topolog\u00eda</Heading>
         <Box h='350px' border='1px solid #ccc'>
-          <ReactFlow nodes={nodes} edges={edges} fitView style={{ width: '100%', height: '100%' }} />
+          <ReactFlow
+            nodes={nodes}
+            edges={edges}
+            onNodesChange={onNodesChange}
+            fitView
+            style={{ width: '100%', height: '100%' }}
+          >
+            <Background color="#aaa" gap={16} />
+          </ReactFlow>
         </Box>
         <Flex mt={4} gap={2} flexWrap='wrap'>
           <Select placeholder='Origen' value={srcId} onChange={e => { setSrcId(e.target.value); setSrcIf('') }}>
