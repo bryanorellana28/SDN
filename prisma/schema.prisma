@@ -103,3 +103,24 @@ model Connection {
   srcDevice     Device   @relation("SrcDeviceConnections", fields: [srcDeviceId], references: [id])
   dstDevice     Device   @relation("DstDeviceConnections", fields: [dstDeviceId], references: [id])
 }
+
+model Client {
+  id             Int       @id @default(autoincrement())
+  nombre         String
+  identificacion String
+  razonSocial    String
+  nit            String
+  contratos      Contract[]
+  createdAt      DateTime  @default(now())
+}
+
+model Contract {
+  id          Int      @id @default(autoincrement())
+  numero      String
+  descripcion String?
+  inicio      DateTime?
+  fin         DateTime?
+  client      Client   @relation(fields: [clientId], references: [id])
+  clientId    Int
+  createdAt   DateTime @default(now())
+}

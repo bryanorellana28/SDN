@@ -18,6 +18,7 @@ export default function Programacion({ devices, schedules }: { devices: Device[]
   const router = useRouter()
   const [form, setForm] = useState({ deviceId: '', period: 'DAILY' })
   const [isOpen, setIsOpen] = useState(false)
+  const [search, setSearch] = useState('')
   const onClose = () => setIsOpen(false)
 
   function handleChange(e: React.ChangeEvent<HTMLSelectElement>) {
@@ -34,11 +35,25 @@ export default function Programacion({ devices, schedules }: { devices: Device[]
     router.reload()
   }
 
+  const filtered = schedules.filter(s =>
+    s.device.nombre.toLowerCase().includes(search.toLowerCase())
+  )
+
   return (
     <SidebarLayout>
       <Box display='flex' justifyContent='space-between' alignItems='center' mb={4}>
         <Box as='h1' fontSize='xl' fontWeight='bold'>Programación de Backups</Box>
-        <Button colorScheme='blue' onClick={() => setIsOpen(true)}>Agregar</Button>
+        <Box ml='auto' display='flex' alignItems='center'>
+          <Input
+            placeholder='Buscar...'
+            value={search}
+            onChange={e => setSearch(e.target.value)}
+            mr={2}
+            bg='white'
+            color='black'
+          />
+          <Button colorScheme='blue' onClick={() => setIsOpen(true)}>Agregar</Button>
+        </Box>
       </Box>
 
       <Drawer isOpen={isOpen} placement='right' onClose={onClose} size='md'>
@@ -80,7 +95,7 @@ export default function Programacion({ devices, schedules }: { devices: Device[]
           </Tr>
         </Thead>
         <Tbody>
-          {schedules.map(s => (
+          {filtered.map(s => (
             <Tr key={s.id}>
               <Td>{s.device.nombre}</Td>
               <Td>{s.credential.usuario}</Td>
