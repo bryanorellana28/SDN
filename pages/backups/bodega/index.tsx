@@ -1,7 +1,8 @@
 import { GetServerSideProps } from 'next'
 import { getSession } from 'next-auth/react'
 import { useRouter } from 'next/router'
-import { Box, Table, Thead, Tbody, Tr, Th, Td, Button } from '@chakra-ui/react'
+import { useState } from 'react'
+import { Box, Table, Thead, Tbody, Tr, Th, Td, Button, Input } from '@chakra-ui/react'
 import SidebarLayout from '../../../components/SidebarLayout'
 import { prisma } from '../../../lib/prisma'
 
@@ -9,9 +10,23 @@ interface Device { id: number; nombre: string }
 
 export default function Bodega({ devices }: { devices: Device[] }) {
   const router = useRouter()
+  const [search, setSearch] = useState('')
+  const filtered = devices.filter(d =>
+    d.nombre.toLowerCase().includes(search.toLowerCase())
+  )
   return (
     <SidebarLayout>
-      <Box as='h1' fontSize='xl' fontWeight='bold' mb={4}>Bodega Backups</Box>
+      <Box display='flex' justifyContent='space-between' alignItems='center' mb={4}>
+        <Box as='h1' fontSize='xl' fontWeight='bold'>Bodega Backups</Box>
+        <Input
+          placeholder='Buscar...'
+          value={search}
+          onChange={e => setSearch(e.target.value)}
+          w='200px'
+          bg='white'
+          color='black'
+        />
+      </Box>
       <Table variant='simple'>
         <Thead>
           <Tr>
@@ -20,7 +35,7 @@ export default function Bodega({ devices }: { devices: Device[] }) {
           </Tr>
         </Thead>
         <Tbody>
-          {devices.map(d => (
+          {filtered.map(d => (
             <Tr key={d.id}>
               <Td>{d.nombre}</Td>
               <Td>

@@ -21,19 +21,20 @@ import {
   Thead,
   Tr
 } from '@chakra-ui/react'
-import SidebarLayout from '../../components/SidebarLayout'
-import { prisma } from '../../lib/prisma'
+import SidebarLayout from '../../../components/SidebarLayout'
+import { prisma } from '../../../lib/prisma'
 
-interface Site {
+interface Client {
   id: number
-  name: string
-  ubicacion?: string | null
-  descripcion?: string | null
+  nombre: string
+  identificacion: string
+  razonSocial: string
+  nit: string
 }
 
-export default function Sites({ sites }: { sites: Site[] }) {
+export default function Clients({ clients }: { clients: Client[] }) {
   const router = useRouter()
-  const [form, setForm] = useState({ name: '', ubicacion: '', descripcion: '' })
+  const [form, setForm] = useState({ nombre: '', identificacion: '', razonSocial: '', nit: '' })
   const [isOpen, setIsOpen] = useState(false)
   const [search, setSearch] = useState('')
   const onClose = () => setIsOpen(false)
@@ -43,30 +44,30 @@ export default function Sites({ sites }: { sites: Site[] }) {
   }
 
   async function handleAdd() {
-    await fetch('/api/sites', {
+    await fetch('/api/clients', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(form)
     })
-    setForm({ name: '', ubicacion: '', descripcion: '' })
+    setForm({ nombre: '', identificacion: '', razonSocial: '', nit: '' })
     onClose()
     router.reload()
   }
 
   async function handleDelete(id: number) {
-    await fetch(`/api/sites/${id}`, { method: 'DELETE' })
+    await fetch(`/api/clients/${id}`, { method: 'DELETE' })
     router.reload()
   }
 
-  const filtered = sites.filter(s =>
-    s.name.toLowerCase().includes(search.toLowerCase()) ||
-    (s.ubicacion || '').toLowerCase().includes(search.toLowerCase())
+  const filtered = clients.filter(c =>
+    c.nombre.toLowerCase().includes(search.toLowerCase()) ||
+    c.identificacion.toLowerCase().includes(search.toLowerCase())
   )
 
   return (
     <SidebarLayout>
       <Box display='flex' justifyContent='space-between' alignItems='center' mb={4}>
-        <Box as='h1' fontSize='xl' fontWeight='bold'>Sitios</Box>
+        <Box as='h1' fontSize='xl' fontWeight='bold'>Clientes</Box>
         <Box ml='auto' display='flex' alignItems='center'>
           <Input
             placeholder='Buscar...'
@@ -83,19 +84,23 @@ export default function Sites({ sites }: { sites: Site[] }) {
       <Drawer isOpen={isOpen} placement='right' onClose={onClose} size='md'>
         <DrawerOverlay />
         <DrawerContent>
-          <DrawerHeader>Agregar Sitio</DrawerHeader>
+          <DrawerHeader>Agregar Cliente</DrawerHeader>
           <DrawerBody>
             <FormControl mb={2}>
               <FormLabel>Nombre</FormLabel>
-              <Input name='name' value={form.name} onChange={handleChange} />
+              <Input name='nombre' value={form.nombre} onChange={handleChange} />
             </FormControl>
             <FormControl mb={2}>
-              <FormLabel>Ubicación</FormLabel>
-              <Input name='ubicacion' value={form.ubicacion} onChange={handleChange} />
+              <FormLabel>Identificación</FormLabel>
+              <Input name='identificacion' value={form.identificacion} onChange={handleChange} />
             </FormControl>
             <FormControl mb={2}>
-              <FormLabel>Descripción</FormLabel>
-              <Input name='descripcion' value={form.descripcion} onChange={handleChange} />
+              <FormLabel>Razón Social</FormLabel>
+              <Input name='razonSocial' value={form.razonSocial} onChange={handleChange} />
+            </FormControl>
+            <FormControl mb={2}>
+              <FormLabel>NIT</FormLabel>
+              <Input name='nit' value={form.nit} onChange={handleChange} />
             </FormControl>
           </DrawerBody>
           <DrawerFooter>
@@ -109,20 +114,22 @@ export default function Sites({ sites }: { sites: Site[] }) {
         <Thead>
           <Tr>
             <Th>Nombre</Th>
-            <Th>Ubicación</Th>
-            <Th>Descripción</Th>
+            <Th>Identificación</Th>
+            <Th>Razón Social</Th>
+            <Th>NIT</Th>
             <Th>Acciones</Th>
           </Tr>
         </Thead>
         <Tbody>
-          {filtered.map((s) => (
-            <Tr key={s.id}>
-              <Td>{s.name}</Td>
-              <Td>{s.ubicacion}</Td>
-              <Td>{s.descripcion}</Td>
+          {filtered.map(c => (
+            <Tr key={c.id}>
+              <Td>{c.nombre}</Td>
+              <Td>{c.identificacion}</Td>
+              <Td>{c.razonSocial}</Td>
+              <Td>{c.nit}</Td>
               <Td>
-                <Button size='sm' mr={2} onClick={() => router.push(`/sites/${s.id}`)}>Editar</Button>
-                <Button size='sm' colorScheme='red' onClick={() => handleDelete(s.id)}>Eliminar</Button>
+                <Button size='sm' mr={2} onClick={() => router.push(`/servicios/clientes/${c.id}`)}>Editar</Button>
+                <Button size='sm' colorScheme='red' onClick={() => handleDelete(c.id)}>Eliminar</Button>
               </Td>
             </Tr>
           ))}
@@ -135,15 +142,9 @@ export default function Sites({ sites }: { sites: Site[] }) {
 export const getServerSideProps: GetServerSideProps = async (context) => {
   const session = await getSession(context)
   if (!session) {
-    return {
-      redirect: {
-        destination: '/login',
-        permanent: false
-      }
-    }
+    return { redirect: { destination: '/login', permanent: false } }
   }
-
-  const sites = await prisma.site.findMany()
-  const serializedSites = sites.map((s) => ({ ...s, createdAt: s.createdAt.toISOString() }))
-  return { props: { sites: serializedSites } }
+  const clients = await prisma.client.findMany()
+  const serialized = clients.map(c => ({ ...c, createdAt: c.createdAt.toISOString() }))
+  return { props: { clients: serialized } }
 }

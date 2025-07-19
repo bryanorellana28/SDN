@@ -34,6 +34,7 @@ export default function Passwords({ credentials }: { credentials: Credential[] }
   const router = useRouter()
   const [form, setForm] = useState({ usuario: '', contrasena: '' })
   const [isOpen, setIsOpen] = useState(false)
+  const [search, setSearch] = useState('')
   const onClose = () => setIsOpen(false)
 
   function handleChange(e: React.ChangeEvent<HTMLInputElement>) {
@@ -56,11 +57,25 @@ export default function Passwords({ credentials }: { credentials: Credential[] }
     router.reload()
   }
 
+  const filtered = credentials.filter(c =>
+    c.usuario.toLowerCase().includes(search.toLowerCase())
+  )
+
   return (
     <SidebarLayout>
       <Box display='flex' justifyContent='space-between' alignItems='center' mb={4}>
         <Box as='h1' fontSize='xl' fontWeight='bold'>Contraseñas</Box>
-        <Button colorScheme='blue' onClick={() => setIsOpen(true)}>Agregar</Button>
+        <Box ml='auto' display='flex' alignItems='center'>
+          <Input
+            placeholder='Buscar...'
+            value={search}
+            onChange={e => setSearch(e.target.value)}
+            mr={2}
+            bg='white'
+            color='black'
+          />
+          <Button colorScheme='blue' onClick={() => setIsOpen(true)}>Agregar</Button>
+        </Box>
       </Box>
 
       <Drawer isOpen={isOpen} placement='right' onClose={onClose} size='md'>
@@ -93,7 +108,7 @@ export default function Passwords({ credentials }: { credentials: Credential[] }
           </Tr>
         </Thead>
         <Tbody>
-          {credentials.map((c) => (
+          {filtered.map((c) => (
             <Tr key={c.id}>
               <Td>{c.usuario}</Td>
               <Td>******</Td>
