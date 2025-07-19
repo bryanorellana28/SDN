@@ -1,21 +1,20 @@
-import { Box, Button, Heading } from '@chakra-ui/react'
+import Head from 'next/head'
 
 export default function Home() {
   return (
-    <Box
-      display='flex'
-      flexDirection='column'
-      justifyContent='center'
-      alignItems='center'
-      minH='100vh'
-      bgGradient='linear(to-r, #020024, #090979, #00d4ff)'
-      color='white'
-      textAlign='center'
-    >
-      <Heading mb={4}>Bienvenido</Heading>
-      <Button as='a' href='/login' bg='white' color='gray.800'>
-        Iniciar sesión
-      </Button>
-    </Box>
+    <>
+      <Head>
+        <title>Inicio</title>
+      </Head>
+      <div
+        className="d-flex flex-column justify-content-center align-items-center min-vh-100 text-white text-center"
+        style={{ background: 'linear-gradient(to right, #020024, #090979, #00d4ff)' }}
+      >
+        <h1 className="mb-4">Bienvenido</h1>
+        <a href="/login" className="btn btn-light text-dark">
+          Iniciar sesión
+        </a>
+      </div>
+    </>
   )
 }

@@ -1,16 +1,8 @@
 import { getCsrfToken, signIn } from 'next-auth/react'
 import { useState } from 'react'
 import { useRouter } from 'next/router'
-import NextLink from 'next/link'
-import {
-  Box,
-  Button,
-  FormControl,
-  FormLabel,
-  Input,
-  Text,
-  Link
-} from '@chakra-ui/react'
+import Link from 'next/link'
+import Head from 'next/head'
 
 export default function Login({ csrfToken }: { csrfToken: string }) {
   const router = useRouter()
@@ -29,56 +21,43 @@ export default function Login({ csrfToken }: { csrfToken: string }) {
     if (res?.ok) {
       router.push('/dashboard')
     } else {
-      setError('Credenciales inválidas')
+      setError('Credenciales inv\u00e1lidas')
     }
   }
 
   return (
-    <Box
-      minH='100vh'
-      display='flex'
-      justifyContent='center'
-      alignItems='center'
-      bgGradient='linear(to-r, #020024, #090979, #00d4ff)'
-    >
-      <Box
-        as='form'
-        onSubmit={handleSubmit}
-        bg='white'
-        p={8}
-        borderRadius='md'
-        boxShadow='md'
-        w='100%'
-        maxW='400px'
+    <>
+      <Head>
+        <title>Iniciar sesión</title>
+      </Head>
+      <div
+        className="d-flex justify-content-center align-items-center min-vh-100"
+        style={{ background: 'linear-gradient(to right, #020024, #090979, #00d4ff)' }}
       >
-        <input name='csrfToken' type='hidden' defaultValue={csrfToken} />
-        <Text as='h1' mb={4} textAlign='center' fontSize='xl'>
-          Iniciar Sesión
-        </Text>
-        {error && (
-          <Text color='red.500' mb={2}>
-            {error}
-          </Text>
-        )}
-        <FormControl mb={4}>
-          <FormLabel>Correo</FormLabel>
-          <Input type='email' name='email' required />
-        </FormControl>
-        <FormControl mb={4}>
-          <FormLabel>Contraseña</FormLabel>
-          <Input type='password' name='password' required />
-        </FormControl>
-        <Button type='submit' colorScheme='blue' w='100%'>
-          Entrar
-        </Button>
-        <Text mt={2} textAlign='center'>
-          ¿No tienes cuenta?{' '}
-          <Link as={NextLink} href='/register' color='blue.500'>
-            Regístrate
-          </Link>
-        </Text>
-      </Box>
-    </Box>
+        <form onSubmit={handleSubmit} className="bg-white p-4 rounded shadow w-100" style={{ maxWidth: '400px' }}>
+          <input name="csrfToken" type="hidden" defaultValue={csrfToken} />
+          <h1 className="text-center mb-4">Iniciar Sesión</h1>
+          {error && <div className="alert alert-danger py-1">{error}</div>}
+          <div className="mb-3">
+            <label className="form-label">Correo</label>
+            <input type="email" name="email" className="form-control" required />
+          </div>
+          <div className="mb-3">
+            <label className="form-label">Contraseña</label>
+            <input type="password" name="password" className="form-control" required />
+          </div>
+          <button type="submit" className="btn btn-primary w-100">
+            Entrar
+          </button>
+          <p className="mt-2 text-center">
+            ¿No tienes cuenta?{' '}
+            <Link href="/register" className="text-primary">
+              Regístrate
+            </Link>
+          </p>
+        </form>
+      </div>
+    </>
   )
 }
 
