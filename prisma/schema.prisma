@@ -124,3 +124,11 @@ model Contract {
   clientId    Int
   createdAt   DateTime @default(now())
 }
+
+model GoldenImage {
+  id        Int      @id @default(autoincrement())
+  modelo    String
+  version   String
+  config    String
+  createdAt DateTime @default(now())
+}
