@@ -92,5 +92,9 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
   const modelsRes = await prisma.device.findMany({ where: { boardName: { not: null } }, distinct: ['boardName'], select: { boardName: true } })
   const models = modelsRes.map(m => m.boardName!).filter(Boolean)
   const images = await prisma.goldenImage.findMany()
-  return { props: { models, images } }
+  const serializedImages = images.map(img => ({
+    ...img,
+    createdAt: img.createdAt.toISOString(),
+  }))
+  return { props: { models, images: serializedImages } }
 }
