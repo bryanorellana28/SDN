@@ -70,6 +70,17 @@ export default function SidebarLayout({ children }: { children: ReactNode }) {
               >
                 Contraseñas
               </Button>
+              <Button
+                as={NextLink}
+                href='/software/cumplimiento'
+                bg='white'
+                color='gray.800'
+                _hover={{ bg: 'gray.200' }}
+                w='100%'
+                size='sm'
+              >
+                Cumplimiento de Software
+              </Button>
             </VStack>
           </Collapse>
           <Button
