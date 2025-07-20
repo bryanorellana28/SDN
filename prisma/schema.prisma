@@ -129,6 +129,6 @@ model GoldenImage {
   id        Int      @id @default(autoincrement())
   modelo    String
   version   String
-  config    String
+  config    String   @db.LongText
   createdAt DateTime @default(now())
 }
